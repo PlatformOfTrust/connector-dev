@@ -1,0 +1,11 @@
+node_modules/
+greenlock.d/
+temp/
+log/
+
+package-lock.json
+.greenlockrc
+yarn.lock
+.idea
+.env
+
