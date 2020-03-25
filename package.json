@@ -31,9 +31,11 @@
     "nodemon": "^2.0.2",
     "oauth-1.0a": "^2.2.6",
     "passport": "^0.4.1",
+    "passport-strategy": "^1.0.0",
     "request": "^2.88.2",
     "request-promise": "^4.2.5",
     "soap": "^0.31.0",
+    "util": "^0.12.2",
     "winston": "^3.2.1",
     "winston-daily-rotate-file": "^4.4.2"
   },
