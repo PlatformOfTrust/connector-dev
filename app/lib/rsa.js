@@ -4,6 +4,8 @@
  */
 const crypto = require('crypto');
 const moment = require('moment');
+const cache = require('../cache');
+const request = require('request');
 const winston = require('../../logger.js');
 
 /**
@@ -11,16 +13,21 @@ const winston = require('../../logger.js');
  *
  * Handles key generation, signing, verifying and public key providing.
  */
-let privateKey = process.env.PRIVATE_KEY;
-let publicKey = process.env.PUBLIC_KEY;
+
+/** Platform of Trust related definitions. */
+const { defaultKeySize, publicKeyURLs } = require('../../config/definitions/pot');
+
+/** Mandatory environment variables. */
 let domain = process.env.TRANSLATOR_DOMAIN;
 
-const defaultKeySize = 4096;
+/** Optional environment variables. */
+let privateKey = process.env.PRIVATE_KEY;
+let publicKey = process.env.PUBLIC_KEY;
 
 if (!privateKey || !publicKey) {
 
     // If RSA keys are not provided by environment variables,
-    // they are generates with the default key size on load.
+    // they are generated on load with the default key size.
 
     crypto.generateKeyPair('rsa', {
         modulusLength: defaultKeySize,
@@ -36,7 +43,7 @@ if (!privateKey || !publicKey) {
         if (!err) {
             privateKey = privKey;
             publicKey = pubKey;
-            winston.log('info', 'Generated RSA keys');
+            winston.log('info', 'Generated RSA keys.');
         } else {
             winston.log('error', err.message);
         }
@@ -44,12 +51,32 @@ if (!privateKey || !publicKey) {
 }
 
 /**
+ * Reads public keys from Platform of Trust resources.
+ */
+const readPublicKeys = function () {
+    for (let environment in publicKeyURLs) {
+        if (Object.hasOwnProperty.call(publicKeyURLs, environment)) {
+            request(publicKeyURLs[environment], function (err, response, body) {
+                if (err) {
+                    winston.log('error', err.message);
+                } else {
+                    cache.setDoc('publicKeys', environment, body.toString())
+                }
+            });
+        }
+    }
+};
+
+// Initiate public keys reading.
+readPublicKeys();
+
+/**
  * Formats private key before it is used for signing.
  *
  * @param {String} str
  *   Private key.
  * @return {String}
- *   The formatted private key.
+ *   Formatted private key.
  */
 function formatPrivateKey(str) {
     const begin = '-----BEGIN PRIVATE KEY-----';
@@ -61,14 +88,14 @@ function formatPrivateKey(str) {
 
 /**
  * Formats public key.
- * Wraps the base64 string to rows with a given length.
+ * Wraps base64 string to rows by given length.
  *
  * @param {String} str
  *   Public key.
  * @param {Number} length
- *   The length of a single line
+ *   Length of a single line
  * @return {String}
- *   The formatted public key.
+ *   Formatted public key.
  */
 function formatPublicKey(str, length) {
     const begin = '-----BEGIN PUBLIC KEY-----';
@@ -81,7 +108,7 @@ function formatPublicKey(str, length) {
 }
 
 /**
- * Sends a public key response.
+ * Sends public key response.
  *
  * @param {Object} req
  * @param {Object} res
@@ -93,20 +120,34 @@ const sendPublicKey = function (req, res) {
 };
 
 /**
- * Generates a signature object for payload.
+ * Stringifies body object.
  *
- * @param {Object} reqBody
+ * @param {Object} body
+ * @return {String}
+ *   Stringified body.
+ */
+const stringifyBody = function (body) {
+    // Sort request body.
+    const sorted = {};
+    Object.keys(body).sort().forEach(k => {
+        sorted[k] = body[k]
+    });
+
+    // Return string.
+    return JSON.stringify(sorted)
+        .replace(/[\u007F-\uFFFF]/g, chr => '\\u' + ('0000' + chr.charCodeAt(0)
+            .toString(16)).substr(-4)).replace(new RegExp('":', 'g'), '": ');
+};
+
+/**
+ * Generates signature object for given payload.
+ *
+ * @param {Object} body
  *   The payload to sign.
  * @return {Object}
  *   The signature object.
  */
-const generateSignature = function (reqBody) {
-    // Sort request body.
-    const body = {};
-    Object.keys(reqBody).sort().forEach(k => {
-        body[k] = reqBody[k]
-    });
-
+const generateSignature = function (body) {
     // Initialize signature object.
     let signature = {
         type: 'RsaSignature2018',
@@ -116,12 +157,9 @@ const generateSignature = function (reqBody) {
 
     // Create HMAC-SHA256 signature in base64 encoded format.
     try {
-        signature.signatureValue = crypto.createHmac('sha256', Buffer.from(formatPrivateKey(privateKey), 'utf8'))
-            .update(JSON.stringify({...body, __signed__: signature.created})
-                .replace(/[\u007F-\uFFFF]/g, chr => '\\u' + ('0000' + chr.charCodeAt(0)
-                    .toString(16)).substr(-4))
-                .replace(new RegExp('":', 'g'), '": '))
-            .digest('base64')
+        signature.signatureValue = crypto
+            .createHmac('sha256', Buffer.from(formatPrivateKey(privateKey), 'utf8'))
+            .update(stringifyBody({...body, __signed__: signature.created})).digest('base64')
     } catch (err) {
         winston.log('error', err.message);
     }
@@ -129,42 +167,31 @@ const generateSignature = function (reqBody) {
 };
 
 /**
- * Validates a signature for given payload.
+ * Validates signature for given payload.
  *
- * @param {Object} reqBody
- *   The payload to validate.
+ * @param {Object} body
+ *   Payload to validate.
  * @param {String} signature
- *   The signature to validate.
+ *   Signature to validate.
  * @param {String} publicKey
- *   The public key used for validating.
+ *   Public key used for validation.
  * @return {Boolean}
- *   True if signature valid, False otherwise.
+ *   True if signature is valid, false otherwise.
  */
-const verifySignature = function (reqBody, signature, publicKey) {
-    // Sort request body.
-    const body = {};
-    Object.keys(reqBody).sort().forEach(k => {
-        body[k] = reqBody[k]
-    });
-
+const verifySignature = function (body, signature, publicKey) {
     // Initialize verifier.
     const verifier = crypto.createVerify('sha256');
 
-    // Create a string from the body object.
-    const bodyString = JSON.stringify(body)
-        .replace(/[\u007F-\uFFFF]/g, chr => '\\u' + ('0000' + chr.charCodeAt(0)
-            .toString(16)).substr(-4))
-        .replace(new RegExp('":', 'g'), '": ');
-    verifier.update(bodyString);
+    // Update verifier.
+    verifier.update(stringifyBody(body));
 
     // Verify base64 encoded SHA256 signature.
-    return verifier.verify(publicKey, signature,'base64')
+    return verifier.verify(publicKey, signature, 'base64')
 };
 
 /**
- * Expose library functions
+ * Expose library functions.
  */
-
 module.exports = {
     generateSignature,
     verifySignature,

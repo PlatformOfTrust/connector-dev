@@ -43,7 +43,7 @@ const Strategy = require('passport-strategy');
  * @api public
  */
 
-function SignatureStrategy (options, verify) {
+function SignatureStrategy(options, verify) {
     if (typeof options == 'function') {
         verify = options;
         options = {};
@@ -64,11 +64,12 @@ util.inherits(SignatureStrategy, Strategy);
  * Authenticate request based on the contents of a form submission.
  *
  * @param {Object} req
+ * @param {Object} options
  * @api protected
  */
-SignatureStrategy.prototype.authenticate = function(req, options) {
+SignatureStrategy.prototype.authenticate = function (req, options) {
     options = options || {};
-    // Looking for this._signatureField inside both request queries and request bodies
+    // Looking for this._signatureField inside both request queries and request bodies.
     let signature = lookup(req.headers, this._signatureField);
     if (!signature) {
         return this.fail(new Error("Missing signature"));
@@ -77,8 +78,12 @@ SignatureStrategy.prototype.authenticate = function(req, options) {
     let self = this;
 
     function verified(err, user, info) {
-        if (err) { return self.error(err); }
-        if (!user) { return self.fail(info); }
+        if (err) {
+            return self.error(err);
+        }
+        if (!user) {
+            return self.fail(info);
+        }
         self.success(user, info);
     }
 
@@ -89,13 +94,18 @@ SignatureStrategy.prototype.authenticate = function(req, options) {
     }
 
     function lookup(obj, field) {
-        if (!obj) { return null; }
+        if (!obj) {
+            return null;
+        }
         let chain = field.split(']').join('').split('[');
         for (let i = 0, len = chain.length; i < len; i++) {
             let prop = obj[chain[i]];
-            if (typeof(prop) === 'undefined') { return null; }
-            if (typeof(prop) !== 'object') {
-                return prop; }
+            if (typeof (prop) === 'undefined') {
+                return null;
+            }
+            if (typeof (prop) !== 'object') {
+                return prop;
+            }
             obj = prop;
         }
         return null;
@@ -103,7 +113,6 @@ SignatureStrategy.prototype.authenticate = function(req, options) {
 };
 
 /**
- * Expose `SignatureStrategy` constructor
+ * Expose `SignatureStrategy` constructor.
  */
-
 module.exports.SignatureStrategy = SignatureStrategy;

@@ -1,0 +1,16 @@
+{
+  "template": "siemens-navigator",
+  "static": {
+    "username": "<username>",
+    "password": "<password>",
+    "type": "MeasureAirTemperatureCelciusDegree"
+  },
+  "dynamic": {
+    "authConfig.resourcePath": "ids"
+  },
+  "request": {
+    "ids": [
+      "<meter-id>"
+    ]
+  }
+}

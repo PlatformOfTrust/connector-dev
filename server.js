@@ -28,7 +28,7 @@ app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.disable('x-powered-by');
 
 // Configure passport.
-require('./config/passport')(passport);
+require('./app/auth/passport')(passport);
 
 // Set up routes for app.
 require('./app/routes/index').app(app, passport);
@@ -49,7 +49,7 @@ app.use(function (err, req, res, next) {
 // Set error handler for HTTP server.
 const handler = function (err) {
     if (err.errno === 'EADDRINUSE') {
-        winston.log('error', 'port ' + port + ' is in use already');
+        winston.log('error', 'port ' + port + ' is in use already.');
     } else {
         winston.log('error', err.message);
     }

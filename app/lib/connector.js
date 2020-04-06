@@ -2,12 +2,309 @@
 /**
  * Module dependencies.
  */
+const winston = require('../../logger.js');
+const cache = require('../cache');
+const moment = require('moment');
+const rest = require('./rest');
+const _ = require('lodash');
+const fs = require('fs');
 
-const getData = async (options) => {
-    let data = [];
-    return Promise.resolve(data);
+/**
+ * Connector library.
+ *
+ * Handles data fetching by product code specific configurations.
+ */
+
+/** Import response definitions. */
+const {
+    PRODUCT_CODE_FIELD,
+    TIMESTAMP_FIELD,
+    START_FIELD,
+    END_FIELD,
+    IDS_FIELD,
+} = require('../../config/definitions/request');
+
+/** Supported connection protocols. */
+const protocols = {
+    soap: require('./soap'),
+    rest: require('./rest')
 };
 
+const plugins = [];
+
+// Set directory for config and template files.
+const configDir = './config';
+const pluginDir = './config/plugins';
+const templateDir = './config/templates';
+
+// Create config and template directory, if they do not exist.
+if (!fs.existsSync(configDir)) fs.mkdirSync(configDir);
+if (!fs.existsSync(templateDir)) fs.mkdirSync(templateDir);
+
+/**
+ * Caches or requires file contents.
+ *
+ * @param {String} dir
+ *   Directory to be scanned.
+ * @param {String} ext
+ *   Extension of the files to be scanned.
+ * @param {String} collection
+ *   Collection name.
+ */
+function loadFiles(dir, ext, collection) {
+    fs.readdir(dir, function (err, files) {
+        if (err) return console.log('Unable to scan directory: ' + err);
+        files.forEach(function (file) {
+            // Handle only files with .json file extension.
+            if (file.substr(-ext.length) !== ext) return;
+            fs.readFile(dir + '/' + file, 'utf8', function (err, data) {
+                if (err) return winston.log('error', 'File read error', err.message);
+                try {
+                    switch(ext) {
+                        /** JSON. */
+                        case '.json':
+                            cache.setDoc(collection, file.split('.')[0], JSON.parse(data));
+                            winston.log('info', 'Loaded ' + dir + '/' + file + '.');
+                            break;
+                        /** JavaScript. */
+                        case '.js':
+                            plugins.push(require('../../config/plugins/' + file));
+                            break;
+                    }
+                } catch (err) {
+                    winston.log('error', err.message);
+                }
+            });
+        });
+    });
+}
+
+// Load plugins, configurations and templates
+loadFiles(pluginDir, '.js', 'plugins');
+loadFiles(configDir, '.json', 'configs');
+loadFiles(templateDir, '.json', 'templates');
+
+/**
+ * Replaces placeholder/s with given value/s.
+ *
+ * @param {String/Object} template
+ *   Template value.
+ * @param {String/Object} placeholder
+ *   Placeholder value.
+ * @param {String} value
+ *   Inserted value.
+ * @return {String/Object}
+ *   Template value with placeholder values.
+ */
+function replacer(template, placeholder, value) {
+    let r = JSON.stringify(template);
+    if (_.isObject(value)) {
+        Object.keys(value).forEach(function (key) {
+            r = r.replace('${' + key + '}', value[key])
+        });
+        return JSON.parse(r);
+    } else {
+        return JSON.parse(r.replace('${' + placeholder + '}', value));
+    }
+}
+
+/**
+ * Configures template with data product config (static)
+ * and request parameters (dynamic).
+ *
+ * @param {Object} config
+ *   Data product specific config.
+ * @param {Object} template
+ *   Connection template for external system.
+ * @param {Object} params
+ *   Parameters from broker API request.
+ * @return {Object}
+ *   Configured template.
+ */
+function replacePlaceholders(config, template, params) {
+    // In case dynamic parameter object ´ids´ does not contain objects,
+    // these elements will be converted from [x, y, ...] to [{id: x}, {id: y}, ...].
+    // This will ease the following dynamic placeholder procedure.
+    if (Object.hasOwnProperty.call(params, 'ids')) {
+        for (let i = 0; i < params.ids.length; i++) {
+            if (!_.isObject(params.ids[i])) {
+                params.ids[i] = {id: params.ids[i]};
+            }
+        }
+    }
+
+    /** Static parameters. */
+    if (Object.hasOwnProperty.call(config, 'static')) {
+        template = replacer(template, null, config.static);
+    }
+
+    /** Dynamic parameters. */
+    if (Object.hasOwnProperty.call(config, 'dynamic')) {
+        Object.keys(config.dynamic).forEach(function (path) {
+            const placeholder = config.dynamic[path];
+            if (Object.hasOwnProperty.call(params, placeholder)) {
+                const templateValue = _.get(template, path);
+                if (Array.isArray(params[placeholder])) {
+                    // Transform placeholder to array, if given parameters are in an array.
+                    const array = [];
+                    params[placeholder].forEach(function (element) {
+                        array.push(replacer(templateValue, placeholder, element));
+                    });
+                    _.set(template, path, array);
+                } else {
+                    _.set(template, path, replacer(templateValue, placeholder, params[placeholder]));
+                }
+            }
+        });
+    }
+    return template;
+}
+
+const parseTs = function (timestamp) {
+    if (!timestamp) return timestamp;
+    try {
+        let parsed = new Date(timestamp);
+        // Sometimes a timestamp in seconds is encountered and needs to be converted to millis.
+        if (parsed.getFullYear() === 1970) parsed = new Date(timestamp * 1000);
+        return parsed;
+    } catch (err) {
+        return timestamp;
+    }
+};
+
+/**
+ * Interprets mode (latest/history/prediction).
+ *
+ * @param {Object} config
+ *   Data product specific config.
+ * @param {Object} parameters
+ *   Broker request parameters.
+ * @return {Object}
+ *   Config with mode.
+ */
+const interpretMode = function (config, parameters) {
+    // Some systems require always start and end time and latest values cannot be queried otherwise.
+    // Start and end times are set to match last 24 hours from given timestamp.
+    // Limit property is used to include only latest values.
+    const defaultTimeRange = 1000 * 60 * 60 * 24;
+
+    // Latest by default.
+    config.mode = 'latest';
+
+    // Detect history request from start and end time
+    if (parameters.start && parameters.end) {
+        config.mode = 'history';
+        // Remove limit query property.
+        delete config.generalConfig.query.properties.limit;
+    } else {
+        // Include default range.
+        parameters.start = new Date(moment.now() - defaultTimeRange);
+    }
+
+    // Detect prediction request from end time
+    if (parameters.end.getTime() > moment.now()) {
+        config.mode = 'prediction';
+    }
+
+    // Save parameters to config.
+    config.parameters = parameters;
+
+    return config;
+};
+
+/**
+ * Loads config by requested product code and retrieves template defined in the config.
+ * Places static and dynamic parameters to the template as described.
+ * Consumes described resources.
+ *
+ * @param {Object} reqBody
+ * @return {Array}
+ *   Data array.
+ */
+const getData = async (reqBody) => {
+    // Pick parameters from reqBody.
+    const productCode = _.get(reqBody, PRODUCT_CODE_FIELD);
+    const timestamp = parseTs(_.get(reqBody, TIMESTAMP_FIELD) || moment.now());
+    const parameters = {
+        ids: _.uniq(_.get(reqBody, IDS_FIELD) || []),
+        start: parseTs(_.get(reqBody, START_FIELD)),
+        end: parseTs(_.get(reqBody, END_FIELD) || timestamp)
+    };
+
+    // Get data product config
+    let config = cache.getDoc('configs', productCode);
+    if (!config) config = cache.getDoc('configs', 'default');
+    if (!config) return rest.promiseRejectWithError(404, 'Data product config not found.');
+    if (!Object.hasOwnProperty.call(config, 'template')) {
+        return rest.promiseRejectWithError(404, 'Data product config template not defined.');
+    }
+
+    // Get data product config template
+    let template = cache.getDoc('templates', config.template);
+    if (!template) return rest.promiseRejectWithError(404, 'Data product config template not found.');
+
+    // Template identifies connector settings for multiple configs.
+    // ProductCode identifies requested data product.
+    template.authConfig.template = config.template;
+    template.productCode = productCode;
+
+    // Places values defined in config to template.
+    template = replacePlaceholders(config, template, parameters);
+
+    // Interpret mode.
+    template = interpretMode(template, parameters);
+
+    // Check that authConfig exists.
+    if (!Object.hasOwnProperty.call(template, 'authConfig')) {
+        return rest.promiseRejectWithError(500, 'Insufficient authentication configurations.');
+    }
+
+    // Attach plugins.
+    if (Object.hasOwnProperty.call(template, 'plugins')) {
+        if (template.plugins.length !== plugins.filter(p => template.plugins.includes(p.name)).length) {
+            return rest.promiseRejectWithError(500, 'Missing required plugins.');
+        } else {
+            template.plugins = plugins.filter(p => template.plugins.includes(p.name));
+        }
+    } else {
+        template.plugins = [];
+    }
+
+    // Check that resource path is defined.
+    if (!Object.hasOwnProperty.call(template.authConfig, 'resourcePath')) {
+        return rest.promiseRejectWithError(500, 'Insufficient resource configurations.');
+    }
+
+    let pathArray = [];
+    let path = template.authConfig.resourcePath;
+    if (!Array.isArray(path)) pathArray.push(path);
+    else pathArray = path;
+
+    // Remove duplicates.
+    pathArray = _.uniq(pathArray);
+
+    // Initialize items array.
+    let items = [];
+
+    // Check that protocol is defined.
+    if (!Object.hasOwnProperty.call(template, 'protocol')) {
+        return rest.promiseRejectWithError(500, 'Connection protocol ' + template.protocol + ' not found.');
+    } else {
+        // Check that the protocol is supported.
+        if (!Object.hasOwnProperty.call(protocols, template.protocol)) {
+            return rest.promiseRejectWithError(500, 'Connection protocol '+ template.protocol + ' not supported.');
+        } else {
+            items = await protocols[template.protocol].getData(template, pathArray);
+            if (!items) items = [];
+        }
+    }
+
+    return Promise.resolve(_.flatten(items));
+};
+
+/**
+ * Expose library functions.
+ */
 module.exports = {
     getData
 };
