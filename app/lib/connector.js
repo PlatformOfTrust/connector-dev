@@ -26,8 +26,9 @@ const {
 
 /** Supported connection protocols. */
 const protocols = {
-    soap: require('./soap'),
-    rest: require('./rest')
+    local: require('./local'),
+    rest: require('./rest'),
+    soap: require('./soap')
 };
 
 const plugins = [];
@@ -37,7 +38,8 @@ const configDir = './config';
 const pluginDir = './config/plugins';
 const templateDir = './config/templates';
 
-// Create config and template directory, if they do not exist.
+// Create plugin, config and template directory, if they do not exist.
+if (!fs.existsSync(pluginDir)) fs.mkdirSync(pluginDir);
 if (!fs.existsSync(configDir)) fs.mkdirSync(configDir);
 if (!fs.existsSync(templateDir)) fs.mkdirSync(templateDir);
 
@@ -160,10 +162,21 @@ function replacePlaceholders(config, template, params) {
     return template;
 }
 
+/**
+ * Parses timestamp to date object.
+ *
+ * @param {String/Number} timestamp
+ * @return
+ */
 const parseTs = function (timestamp) {
     if (!timestamp) return timestamp;
     try {
         let parsed = new Date(timestamp);
+        if (parsed.toString() === 'Invalid Date') {
+            // Try parsing the timestamp to integer.
+            timestamp = Number.parseInt(timestamp);
+            parsed = new Date(timestamp);
+        }
         // Sometimes a timestamp in seconds is encountered and needs to be converted to millis.
         if (parsed.getFullYear() === 1970) parsed = new Date(timestamp * 1000);
         return parsed;
@@ -193,9 +206,19 @@ const interpretMode = function (config, parameters) {
 
     // Detect history request from start and end time
     if (parameters.start && parameters.end) {
+        // Sort timestamp to correct order
+        if (parameters.end < parameters.start) {
+            const start = parameters.end;
+            parameters.end = parameters.start;
+            parameters.start = start;
+        }
         config.mode = 'history';
         // Remove limit query property.
-        delete config.generalConfig.query.properties.limit;
+        if (Object.hasOwnProperty.call(config, 'generalConfig')) {
+            if (Object.hasOwnProperty.call(config.generalConfig, 'query')) {
+                delete config.generalConfig.query.properties.limit;
+            }
+        }
     } else {
         // Include default range.
         parameters.start = new Date(moment.now() - defaultTimeRange);
@@ -223,7 +246,7 @@ const interpretMode = function (config, parameters) {
  */
 const getData = async (reqBody) => {
     // Pick parameters from reqBody.
-    const productCode = _.get(reqBody, PRODUCT_CODE_FIELD);
+    const productCode = _.get(reqBody, PRODUCT_CODE_FIELD) || 'default';
     const timestamp = parseTs(_.get(reqBody, TIMESTAMP_FIELD) || moment.now());
     const parameters = {
         ids: _.uniq(_.get(reqBody, IDS_FIELD) || []),

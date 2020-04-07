@@ -83,6 +83,7 @@ function getWSDL(config) {
 function executeRemoteFunction(client, path, args) {
     return new Promise((resolve, reject) => {
         _.get(client, path)(args, function (err, result, envelope, soapHeader) {
+            // if (err) reject(err);
             if (err) resolve();
             else resolve(result)
         });
@@ -168,7 +169,9 @@ const getData = async (config, pathArray) => {
         winston.log('info', 'Started downloading WDSL file...');
         const downloadedWSDLFile = await getWSDL(config);
         winston.log('info', 'Download finished.');
+
         await writeSOAPFile(WSDLFile, downloadedWSDLFile);
+
         if (downloadedWSDLFile) {
             winston.log('info', 'Downloaded ' + encodeURI(config.productCode) + '.xml');
             items = await createSOAPClient(config, WSDLFile, pathArray);

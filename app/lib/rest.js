@@ -99,7 +99,7 @@ const handleError = async (config, err) => {
  *
  * @param {Object} config
  * @param {String} pathArray
- *   Resource path, which will be included to the resource url.
+ *   Resource path, which will be included to the request.
  * @return {Array}
  */
 const getData = async (config, pathArray) => {
@@ -109,6 +109,22 @@ const getData = async (config, pathArray) => {
         if (item) items.push(item);
     }
     return items;
+};
+
+/**
+ * Parses body object from API response.
+ *
+ * @param {Object} response
+ * @return {Object}
+ */
+const parseResBody = function (response) {
+    let body = {};
+    try {
+        body = JSON.parse(response.body);
+    } catch (e) {
+        winston.log('error', 'Failed to parse response body.');
+    }
+    return body;
 };
 
 /**
@@ -157,11 +173,10 @@ const requestData = async (config, resourcePath, index) => {
         options = await plugin.request(config.authConfig, options);
     });
 
-
     /** First attempt */
     return getDataByOptions(config.authConfig, options, resourcePath).then(function (result) {
         // Handle received data.
-        if (result !== null) return response.handleData(config, resourcePath, index, result);
+        if (result !== null) return response.handleData(config, resourcePath, index, parseResBody(result));
         // Handle connection timed out.
         return promiseRejectWithError(522, 'Connection timed out.');
     }).then(function (result) {
@@ -179,7 +194,7 @@ const requestData = async (config, resourcePath, index) => {
             return getData(config, resourcePath);
         }).then(function (result) {
             // Handle received data.
-            if (result !== null) return response.handleData(config, resourcePath, index, result);
+            if (result !== null) return response.handleData(config, resourcePath, index, parseResBody(result));
             return promiseRejectWithError(522, 'Connection timed out.');
         }).then(function (result) {
             // Return received data.

@@ -43,7 +43,21 @@ app.use(function (req, res, next) {
 // Set error handler for app.
 app.use(function (err, req, res, next) {
     res.locals.message = err.message;
-    res.status(err.status || 500).send({success: false, message: 'Internal Server Error. ' + err.message});
+    let message = 'Internal Server Error.';
+    switch (err.status) {
+        case 400:
+            message = 'Bad Request.';
+            break;
+        case 404:
+            message = 'Not Found.';
+            break;
+    }
+    res.status(err.status || 500).send({
+        error: {
+            status: err.status || 500,
+            message
+        }
+    });
 });
 
 // Set error handler for HTTP server.
@@ -57,7 +71,7 @@ const handler = function (err) {
 
 // Set callback for HTTP server.
 const callback = function (port) {
-    winston.log('info', 'Translator API started on port: ' + port);
+    winston.log('info', 'Connector API started on port: ' + port);
 };
 
 let server;
@@ -68,7 +82,7 @@ if (process.env.GREENLOCK_MAINTANER) {
     /**
      * Greenlock Express v4 configuration.
      */
-    let config = { sites: []};
+    let config = {sites: []};
     const configDir = './greenlock.d';
     const configFile = configDir + '/config.json';
     if (!fs.existsSync(configDir)) fs.mkdirSync(configDir);
@@ -90,7 +104,7 @@ if (process.env.GREENLOCK_MAINTANER) {
     server = require("greenlock-express").init({
         packageRoot: __dirname,
         configDir,
-        maintainerEmail:  process.env.GREENLOCK_MAINTANER,
+        maintainerEmail: process.env.GREENLOCK_MAINTANER,
         cluster: false
     }).serve(app);
 } else {

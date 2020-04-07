@@ -80,22 +80,12 @@ function getValueFromResponse(config, resourcePath, object, key) {
  * @return {Promise}
  */
 const handleData = async (config, resourcePath, index, APIData, SOAPData) => {
-    let response;
-    try {
-        if (!SOAPData) response = APIData;
-        else response = {body: SOAPData};
-    } catch (err) {
-        winston.log('info', err.message);
-    }
-
     let data = {};
-    try {
-        data = JSON.parse(response.body);
-    } catch (err) {
-        if (SOAPData) data = SOAPData;
-        else data = {};
-    }
+    if (!SOAPData) data = APIData;
+    else data = SOAPData;
 
+    // Validate data object.
+    if (!_.isObject(data)) return Promise.resolve();
     if (Object.keys(data).length === 0) return Promise.resolve();
 
     if (!config.dataPropertyMappings || !config.dataObjects) {
@@ -203,9 +193,32 @@ const handleData = async (config, resourcePath, index, APIData, SOAPData) => {
         }
     }
 
-    // TODO: Combine measurements with same hardwareId to same object (history).
+    let mergedData = measurements;
 
-    return Promise.resolve(measurements);
+    // Merge measurements with same hardwareId to same data array (history).
+    try {
+        let merged = {};
+        for (let i = 0; i < measurements.length; i++ ) {
+            if (!Object.hasOwnProperty.call(merged, measurements[i][ID_FIELD || 'id'])) {
+                merged[measurements[i][ID_FIELD || 'id']] =  measurements[i];
+            } else {
+                merged[measurements[i][ID_FIELD || 'id']][DATA_FIELD || 'data']
+                    = [...measurements[i][DATA_FIELD || 'data'], ...merged[measurements[i][ID_FIELD || 'id']][DATA_FIELD || 'data']]
+            }
+        }
+        mergedData = Object.values(merged);
+
+        // Sort data arrays.
+        for (let i = 0; i < mergedData.length; i++ ) {
+            mergedData[i][DATA_FIELD || 'data'] =
+                mergedData[i][DATA_FIELD || 'data']
+                    .sort((a, b) => a[TIMESTAMP_FIELD || 'timestamp'] - b[TIMESTAMP_FIELD || 'timestamp']);
+        }
+    } catch (err) {
+        winston.log('error', 'Failed to merge data. ' + err.message);
+    }
+
+    return Promise.resolve(mergedData);
 };
 
 /**
