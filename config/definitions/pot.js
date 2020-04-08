@@ -43,6 +43,12 @@ const supportedParameters = {
     },
     'parameters.ids': {
         required: true
+    },
+    'parameters.startTime': {
+        required: false
+    },
+    'parameters.endTime': {
+        required: false
     }
 };
 
