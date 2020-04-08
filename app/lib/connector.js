@@ -24,6 +24,9 @@ const {
     IDS_FIELD,
 } = require('../../config/definitions/request');
 
+/** Import platform of trust definitions. */
+const {supportedParameters} = require('../../config/definitions/pot');
+
 /** Supported connection protocols. */
 const protocols = {
     local: require('./local'),
@@ -62,7 +65,7 @@ function loadFiles(dir, ext, collection) {
             fs.readFile(dir + '/' + file, 'utf8', function (err, data) {
                 if (err) return winston.log('error', 'File read error', err.message);
                 try {
-                    switch(ext) {
+                    switch (ext) {
                         /** JSON. */
                         case '.json':
                             cache.setDoc(collection, file.split('.')[0], JSON.parse(data));
@@ -250,6 +253,23 @@ const interpretMode = function (config, parameters) {
  *   Data array.
  */
 const getData = async (reqBody) => {
+    const missing = [];
+    /** Parameter validation */
+    for (let parameter in supportedParameters) {
+        if (Object.hasOwnProperty.call(supportedParameters, parameter)) {
+            if (!Object.hasOwnProperty.call(reqBody, parameter)) {
+                if (supportedParameters[parameter].required) {
+                    missing.push(parameter);
+                }
+            }
+        }
+    }
+    if (missing.length > 0) {
+        return rest.promiseRejectWithError(422, missing.map((p) => {
+            return {[p]: ['Missing data for required field.']}
+        }));
+    }
+
     // Pick parameters from reqBody.
     const productCode = _.get(reqBody, PRODUCT_CODE_FIELD) || 'default';
     const timestamp = parseTs(_.get(reqBody, TIMESTAMP_FIELD) || moment.now());
@@ -320,7 +340,7 @@ const getData = async (reqBody) => {
     } else {
         // Check that the protocol is supported.
         if (!Object.hasOwnProperty.call(protocols, template.protocol)) {
-            return rest.promiseRejectWithError(500, 'Connection protocol '+ template.protocol + ' not supported.');
+            return rest.promiseRejectWithError(500, 'Connection protocol ' + template.protocol + ' not supported.');
         } else {
             items = await protocols[template.protocol].getData(template, pathArray);
             if (!items) items = [];

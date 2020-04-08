@@ -30,9 +30,23 @@ const supportedHeaders = {
     }
 };
 
+/** List of supported parameters, and if they're required or not. */
+const supportedParameters = {
+    'productCode': {
+        required: true
+    },
+    'timestamp': {
+        required: true
+    },
+    'parameters': {
+        required: true
+    }
+};
+
 module.exports = {
     defaultKeySize,
     publicKeyURLs,
     contextURLs,
-    supportedHeaders
+    supportedHeaders,
+    supportedParameters
 };

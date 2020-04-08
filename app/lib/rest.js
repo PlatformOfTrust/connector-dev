@@ -16,16 +16,17 @@ const rp = require('request-promise');
  * Returns promise reject with error.
  *
  * @param {Number} [code]
- * @param {String} [msg]
+ * @param {String/Object} [msg]
  *   Error message.
  * @param {String} [reference]
  *   Additional info about the cause of the error.
  * @return {Promise}
  */
 const promiseRejectWithError = function (code, msg, reference) {
-    let err = new Error(msg || 'Internal Server Error.');
+    let err = new Error();
     err.httpStatusCode = code || 500;
     err.reference = reference;
+    err.message = msg || 'Internal Server Error.';
     return Promise.reject(err);
 };
 
@@ -99,7 +100,7 @@ const handleError = async (config, err) => {
  *
  * @param {Object} config
  * @param {String} pathArray
- *   Resource path, which will be included to the request.
+ *   Resource path, which will be included to the resource url.
  * @return {Array}
  */
 const getData = async (config, pathArray) => {
@@ -132,7 +133,7 @@ const parseResBody = function (response) {
  *
  * @param {Object} config
  * @param {String} resourcePath
- *   Resource path, which will be included to the resource url.
+ *   Resource path, which will be included to the request.
  * @param {Number} index
  * @return {Promise}
  */

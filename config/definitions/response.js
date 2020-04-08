@@ -7,7 +7,7 @@ const defs0 = {
     DATA_FIELD: 'data',
     VALUE_FIELD: 'value',
     TYPE_FIELD: '@type',
-    ID_FIELD: '@id',
+    ID_FIELD: 'id',
 };
 
 const defs1 = {
