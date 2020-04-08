@@ -11,6 +11,9 @@ const connector = require('../lib/connector');
  * Handles fetching and returning of the data.
  */
 
+/** Import contextURL definitions. */
+const contextURLs = require('../../config/definitions/pot').contextURLs;
+
 /**
  * Returns the data to the PoT Broker API
  * based on the parameters sent.
@@ -22,10 +25,13 @@ const connector = require('../lib/connector');
  */
 module.exports.fetch = async (req, res) => {
     let result;
+    const type = 'dataProduct';
     try {
         result = {
-            "@context": "https://...jsonld",
+            "@context": contextURLs[type],
             "data": {
+                "@context": contextURLs[type],
+                "@type": type,
                 "items": []
             }
         };

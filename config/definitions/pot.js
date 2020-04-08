@@ -12,6 +12,11 @@ const publicKeyURLs = {
     production: 'http://docs.oftrust.net/keys/production/request_sign.pub'
 };
 
+/** Context URLs. */
+const contextURLs = {
+    dataProduct: 'https://standards.lifeengine.io/v1/Context/Identity/Thing/HumanWorld/Product/DataProduct/'
+};
+
 /** List of supported headers, and if they're required or not. */
 const supportedHeaders = {
     'x-pot-signature': {
@@ -28,5 +33,6 @@ const supportedHeaders = {
 module.exports = {
     defaultKeySize,
     publicKeyURLs,
+    contextURLs,
     supportedHeaders
 };
