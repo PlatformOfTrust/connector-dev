@@ -14,7 +14,7 @@ const publicKeyURLs = {
 
 /** Context URLs. */
 const contextURLs = {
-    dataProduct: 'https://standards.lifeengine.io/v1/Context/Identity/Thing/HumanWorld/Product/DataProduct/'
+    DataProduct: 'https://standards.lifeengine.io/v1/Context/Identity/Thing/HumanWorld/Product/DataProduct/'
 };
 
 /** List of supported headers, and if they're required or not. */

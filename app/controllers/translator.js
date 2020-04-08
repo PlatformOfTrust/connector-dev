@@ -25,7 +25,7 @@ const contextURLs = require('../../config/definitions/pot').contextURLs;
  */
 module.exports.fetch = async (req, res) => {
     let result;
-    const type = 'dataProduct';
+    const type = 'DataProduct';
     try {
         result = {
             "@context": contextURLs[type],
