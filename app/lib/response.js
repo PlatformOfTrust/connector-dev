@@ -8,11 +8,11 @@ const _ = require('lodash');
 
 /** Import response definitions. */
 const {
-    TIMESTAMP_FIELD,
-    VALUE_FIELD,
-    TYPE_FIELD,
-    DATA_FIELD,
-    ID_FIELD
+    TIMESTAMP,
+    VALUE,
+    TYPE,
+    DATA,
+    ID
 } = require('../../config/definitions/response');
 
 /**
@@ -177,16 +177,16 @@ const handleData = async (config, resourcePath, index, APIData, SOAPData) => {
             if (Object.keys(measurement.data).length === 0) continue;
 
             const item = {
-                [ID_FIELD || 'id']: hardwareId,
-                [DATA_FIELD || 'data']: []
+                [ID || 'id']: hardwareId,
+                [DATA || 'data']: []
             };
 
             // Format data
             for (let d = 0; d < Object.entries(measurement.data).length; d++ ) {
-                item[DATA_FIELD || 'data'].push({
-                    [TYPE_FIELD || 'type']: Object.entries(measurement.data)[d][0],
-                    [VALUE_FIELD || 'value']: Object.entries(measurement.data)[d][1],
-                    [TIMESTAMP_FIELD || 'timestamp']: measurement.timestamp,
+                item[DATA || 'data'].push({
+                    [TYPE || 'type']: Object.entries(measurement.data)[d][0],
+                    [VALUE || 'value']: Object.entries(measurement.data)[d][1],
+                    [TIMESTAMP || 'timestamp']: measurement.timestamp,
                 });
             }
             measurements.push(item);
@@ -199,20 +199,20 @@ const handleData = async (config, resourcePath, index, APIData, SOAPData) => {
     try {
         let merged = {};
         for (let i = 0; i < measurements.length; i++ ) {
-            if (!Object.hasOwnProperty.call(merged, measurements[i][ID_FIELD || 'id'])) {
-                merged[measurements[i][ID_FIELD || 'id']] =  measurements[i];
+            if (!Object.hasOwnProperty.call(merged, measurements[i][ID || 'id'])) {
+                merged[measurements[i][ID || 'id']] =  measurements[i];
             } else {
-                merged[measurements[i][ID_FIELD || 'id']][DATA_FIELD || 'data']
-                    = [...measurements[i][DATA_FIELD || 'data'], ...merged[measurements[i][ID_FIELD || 'id']][DATA_FIELD || 'data']]
+                merged[measurements[i][ID || 'id']][DATA || 'data']
+                    = [...measurements[i][DATA || 'data'], ...merged[measurements[i][ID || 'id']][DATA || 'data']]
             }
         }
         mergedData = Object.values(merged);
 
         // Sort data arrays.
         for (let i = 0; i < mergedData.length; i++ ) {
-            mergedData[i][DATA_FIELD || 'data'] =
-                mergedData[i][DATA_FIELD || 'data']
-                    .sort((a, b) => a[TIMESTAMP_FIELD || 'timestamp'] - b[TIMESTAMP_FIELD || 'timestamp']);
+            mergedData[i][DATA || 'data'] =
+                mergedData[i][DATA || 'data']
+                    .sort((a, b) => a[TIMESTAMP || 'timestamp'] - b[TIMESTAMP || 'timestamp']);
         }
     } catch (err) {
         winston.log('error', 'Failed to merge data. ' + err.message);

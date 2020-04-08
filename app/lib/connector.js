@@ -15,17 +15,8 @@ const fs = require('fs');
  * Handles data fetching by product code specific configurations.
  */
 
-/** Import response definitions. */
-const {
-    PRODUCT_CODE_FIELD,
-    TIMESTAMP_FIELD,
-    START_FIELD,
-    END_FIELD,
-    IDS_FIELD,
-} = require('../../config/definitions/request');
-
 /** Import platform of trust definitions. */
-const {supportedParameters} = require('../../config/definitions/pot');
+const {supportedParameters} = require('../../config/definitions/request');
 
 /** Supported connection protocols. */
 const protocols = {
@@ -255,11 +246,14 @@ const interpretMode = function (config, parameters) {
 const getData = async (reqBody) => {
     /** Parameter validation */
     const missing = [];
-    for (let parameter in supportedParameters) {
-        if (Object.hasOwnProperty.call(supportedParameters, parameter)) {
-            if (!_.get(reqBody, parameter)) {
-                if (supportedParameters[parameter].required) {
-                    missing.push(parameter);
+    const keys = Object.assign({}, ...Object.values(supportedParameters).map((p) => {
+        return {[p.value]: p}
+    }));
+    for (let key in keys) {
+        if (Object.hasOwnProperty.call(keys, key)) {
+            if (!_.get(reqBody, key)) {
+                if (keys[key].required) {
+                    missing.push(key);
                 }
             }
         }
@@ -271,12 +265,12 @@ const getData = async (reqBody) => {
     }
 
     // Pick parameters from reqBody.
-    const productCode = _.get(reqBody, PRODUCT_CODE_FIELD) || 'default';
-    const timestamp = parseTs(_.get(reqBody, TIMESTAMP_FIELD) || moment.now());
+    const productCode = _.get(reqBody, supportedParameters.PRODUCT_CODE.value) || 'default';
+    const timestamp = parseTs(_.get(reqBody, supportedParameters.TIMESTAMP.value) || moment.now());
     const parameters = {
-        ids: _.uniq(_.get(reqBody, IDS_FIELD) || []),
-        start: parseTs(_.get(reqBody, START_FIELD)),
-        end: parseTs(_.get(reqBody, END_FIELD) || timestamp)
+        ids: _.uniq(_.get(reqBody, supportedParameters.IDS.value) || []),
+        start: parseTs(_.get(reqBody, supportedParameters.START.value)),
+        end: parseTs(_.get(reqBody, supportedParameters.END.value) || timestamp)
     };
 
     // Get data product config

@@ -3,19 +3,19 @@
  * Response definitions.
  */
 const defs0 = {
-    TIMESTAMP_FIELD: 'timestamp',
-    DATA_FIELD: 'data',
-    VALUE_FIELD: 'value',
-    TYPE_FIELD: '@type',
-    ID_FIELD: 'id',
+    TIMESTAMP: 'timestamp',
+    DATA: 'data',
+    VALUE: 'value',
+    TYPE: '@type',
+    ID: 'id',
 };
 
 const defs1 = {
-    TIMESTAMP_FIELD: 'timestamp',
-    DATA_FIELD: 'dataProductOutput',
-    VALUE_FIELD: 'outputValue',
-    TYPE_FIELD: '@type',
-    ID_FIELD: '@id',
+    TIMESTAMP: 'timestamp',
+    DATA: 'dataProductOutput',
+    VALUE: 'outputValue',
+    TYPE: '@type',
+    ID: '@id',
 };
 
 module.exports = defs0;

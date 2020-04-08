@@ -13,7 +13,7 @@ const SignatureStrategy = require('./strategies/signature').SignatureStrategy;
  */
 
 /** Import platform of trust definitions. */
-const { supportedHeaders } = require('../../config/definitions/pot');
+const { supportedHeaders } = require('../../config/definitions/request');
 
 /**
  * Extracts identity id from Platform of Trust token.
