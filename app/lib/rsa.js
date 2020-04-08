@@ -15,7 +15,7 @@ const winston = require('../../logger.js');
  */
 
 /** Platform of Trust related definitions. */
-const { defaultKeySize, publicKeyURLs } = require('../../config/definitions/pot');
+const {defaultKeySize, publicKeyURLs} = require('../../config/definitions/pot');
 
 /** Mandatory environment variables. */
 let domain = process.env.TRANSLATOR_DOMAIN;
@@ -128,13 +128,21 @@ const sendPublicKey = function (req, res) {
  */
 const stringifyBody = function (body) {
     // Sort request body.
-    const sorted = {};
+    const sortedBody = {};
     Object.keys(body).sort().forEach(k => {
-        sorted[k] = body[k]
+        sortedBody[k] = body[k]
     });
 
+    if (Object.hasOwnProperty.call('parameters')) {
+        const sortedParameters = {};
+        Object.keys(body).parameters.sort().forEach(k => {
+            sortedParameters[k] = body.parameters[k]
+        });
+        sortedBody.parameters = sortedParameters;
+    }
+
     // Return string.
-    return JSON.stringify(sorted)
+    return JSON.stringify(sortedBody)
         .replace(/[\u007F-\uFFFF]/g, chr => '\\u' + ('0000' + chr.charCodeAt(0)
             .toString(16)).substr(-4)).replace(new RegExp('":', 'g'), '": ');
 };
