@@ -104,6 +104,11 @@ function replacer(template, placeholder, value) {
         Object.keys(value).forEach(function (key) {
             r = r.replace('${' + key + '}', value[key])
         });
+        // In case id placeholder is left untouched.
+        if (r === '"${id}"' && Object.keys(value).length > 0) {
+            // Place object to the id placeholder.
+            r = r.replace('"${id}"', JSON.stringify(value))
+        }
         return JSON.parse(r);
     } else {
         return JSON.parse(r.replace('${' + placeholder + '}', value));
