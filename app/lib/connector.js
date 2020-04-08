@@ -257,7 +257,7 @@ const getData = async (reqBody) => {
     const missing = [];
     for (let parameter in supportedParameters) {
         if (Object.hasOwnProperty.call(supportedParameters, parameter)) {
-            if (!Object.hasOwnProperty.call(reqBody, parameter)) {
+            if (!_.get(reqBody, parameter)) {
                 if (supportedParameters[parameter].required) {
                     missing.push(parameter);
                 }

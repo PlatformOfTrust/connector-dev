@@ -40,6 +40,9 @@ const supportedParameters = {
     },
     'parameters': {
         required: true
+    },
+    'parameters.ids': {
+        required: true
     }
 };
 
