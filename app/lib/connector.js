@@ -253,8 +253,8 @@ const interpretMode = function (config, parameters) {
  *   Data array.
  */
 const getData = async (reqBody) => {
-    const missing = [];
     /** Parameter validation */
+    const missing = [];
     for (let parameter in supportedParameters) {
         if (Object.hasOwnProperty.call(supportedParameters, parameter)) {
             if (!Object.hasOwnProperty.call(reqBody, parameter)) {
@@ -265,9 +265,9 @@ const getData = async (reqBody) => {
         }
     }
     if (missing.length > 0) {
-        return rest.promiseRejectWithError(422, missing.map((p) => {
+        return rest.promiseRejectWithError(422, Object.assign({}, ...missing.map((p) => {
             return {[p]: ['Missing data for required field.']}
-        }));
+        })));
     }
 
     // Pick parameters from reqBody.
