@@ -2,7 +2,7 @@
 /**
  * Response definitions.
  */
-const defs0 = {
+const definitions = {
     TIMESTAMP: 'timestamp',
     DATA: 'data',
     VALUE: 'value',
@@ -10,7 +10,7 @@ const defs0 = {
     ID: 'id',
 };
 
-const defs1 = {
+const definitionsV2 = {
     TIMESTAMP: 'timestamp',
     DATA: 'dataProductOutput',
     VALUE: 'outputValue',
@@ -18,4 +18,7 @@ const defs1 = {
     ID: '@id',
 };
 
-module.exports = defs0;
+/**
+ * Expose definitions.
+ */
+module.exports = definitions;

@@ -3,6 +3,7 @@
  * Module dependencies.
  */
 const winston = require('../../logger.js');
+const validator = require('./validator');
 const cache = require('../cache');
 const moment = require('moment');
 const rest = require('./rest');
@@ -16,7 +17,14 @@ const fs = require('fs');
  */
 
 /** Import platform of trust definitions. */
-const {supportedParameters} = require('../../config/definitions/request');
+const {
+    PRODUCT_CODE,
+    TIMESTAMP,
+    IDS,
+    START,
+    END,
+    supportedParameters
+} = require('../../config/definitions/request');
 
 /** Supported connection protocols. */
 const protocols = {
@@ -245,32 +253,18 @@ const interpretMode = function (config, parameters) {
  */
 const getData = async (reqBody) => {
     /** Parameter validation */
-    const missing = [];
-    const keys = Object.assign({}, ...Object.values(supportedParameters).map((p) => {
-        return {[p.value]: p}
-    }));
-    for (let key in keys) {
-        if (Object.hasOwnProperty.call(keys, key)) {
-            if (!_.get(reqBody, key)) {
-                if (keys[key].required) {
-                    missing.push(key);
-                }
-            }
-        }
-    }
-    if (missing.length > 0) {
-        return rest.promiseRejectWithError(422, Object.assign({}, ...missing.map((p) => {
-            return {[p]: ['Missing data for required field.']}
-        })));
+    const validation = validator.validate(reqBody, supportedParameters);
+    if (Object.hasOwnProperty.call(validation, 'error')) {
+        if (validation.error) return rest.promiseRejectWithError(422, validation.error);
     }
 
     // Pick parameters from reqBody.
-    const productCode = _.get(reqBody, supportedParameters.PRODUCT_CODE.value) || 'default';
-    const timestamp = parseTs(_.get(reqBody, supportedParameters.TIMESTAMP.value) || moment.now());
+    const productCode = _.get(reqBody, PRODUCT_CODE) || 'default';
+    const timestamp = parseTs(_.get(reqBody, TIMESTAMP) || moment.now());
     const parameters = {
-        ids: _.uniq(_.get(reqBody, supportedParameters.IDS.value) || []),
-        start: parseTs(_.get(reqBody, supportedParameters.START.value)),
-        end: parseTs(_.get(reqBody, supportedParameters.END.value) || timestamp)
+        ids: _.uniq(_.get(reqBody, IDS) || []),
+        start: parseTs(_.get(reqBody, START)),
+        end: parseTs(_.get(reqBody, END) || timestamp)
     };
 
     // Get data product config

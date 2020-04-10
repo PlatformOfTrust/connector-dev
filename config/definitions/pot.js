@@ -17,6 +17,9 @@ const contextURLs = {
     DataProduct: 'https://standards.lifeengine.io/v1/Context/Identity/Thing/HumanWorld/Product/DataProduct/'
 };
 
+/**
+ * Expose definitions.
+ */
 module.exports = {
     defaultKeySize,
     publicKeyURLs,

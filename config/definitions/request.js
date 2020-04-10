@@ -3,48 +3,61 @@
  * Broker request definitions.
  */
 
+/** List of definitions. */
+const definitions = {
+    /** Header */
+    SIGNATURE: 'x-pot-signature',
+    APP_TOKEN: 'x-app-token',
+    USER_TOKEN: 'x-user-token',
+    /** Body */
+    PRODUCT_CODE: 'productCode',
+    TIMESTAMP: 'timestamp',
+    PARAMETERS: 'parameters',
+    IDS: 'parameters.ids',
+    START: 'parameters.startTime',
+    END: 'parameters.endTime'
+};
+
 /** List of supported headers, and if they're required or not. */
 const supportedHeaders = {
-    'x-pot-signature': {
+    [definitions.SIGNATURE]: {
         required: true
     },
-    'x-app-token': {
+    [definitions.APP_TOKEN]: {
         required: true
     },
-    'x-user-token': {
+    [definitions.USER_TOKEN]: {
         required: false
     }
 };
 
 /** List of supported parameters, and if they're required or not. */
 const supportedParameters = {
-    PRODUCT_CODE: {
-        value: 'productCode',
+    [definitions.PRODUCT_CODE]: {
         required: true
     },
-    TIMESTAMP: {
-        value: 'timestamp',
+    [definitions.TIMESTAMP]: {
         required: true
     },
-    PARAMETERS: {
-        value: 'parameters',
+    [definitions.PARAMETERS]: {
         required: true
     },
-    IDS: {
-        value: 'parameters.ids',
+    [definitions.IDS]: {
         required: true
     },
-    START: {
-        value: 'parameters.startTime',
+    [definitions.START]: {
         required: false
     },
-    END: {
-        value: 'parameters.endTime',
+    [definitions.END]: {
         required: false
     }
 };
 
+/**
+ * Expose definitions.
+ */
 module.exports = {
+    ...definitions,
     supportedHeaders,
     supportedParameters
 };
