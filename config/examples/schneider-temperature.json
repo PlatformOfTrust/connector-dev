@@ -1,0 +1,17 @@
+{
+  "template": "schneider",
+  "static": {
+    "url": "<url>",
+    "username": "<username>",
+    "password": "<password>",
+    "type": "MeasureAirTemperatureCelciusDegree"
+  },
+  "dynamic": {
+    "authConfig.resourcePath": "ids"
+  },
+  "request": {
+    "ids": [
+      "<path>"
+    ]
+  }
+}
