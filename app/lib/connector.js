@@ -223,7 +223,9 @@ const interpretMode = function (config, parameters) {
         // Remove limit query property.
         if (Object.hasOwnProperty.call(config, 'generalConfig')) {
             if (Object.hasOwnProperty.call(config.generalConfig, 'query')) {
-                delete config.generalConfig.query.properties.limit;
+                if (Object.hasOwnProperty.call(config.generalConfig.query, 'properties')) {
+                    delete config.generalConfig.query.properties.limit;
+                }
             }
         }
     } else {
