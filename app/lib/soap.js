@@ -112,9 +112,11 @@ const createSOAPClient = async (config, url, pathArray) => {
         soap.createClient(url, options, async (err, client) => {
             if (err) {
                 // Execute onerror plugin function.
-                config.plugins.filter(p => !!p.onerror).map((plugin) => {
-                    return plugin.onerror(config.authConfig, err);
-                });
+                for (let i = 0; i < config.plugins.length; i++) {
+                    if (!!config.plugins[i].onerror) {
+                        return await config.plugins[i].onerror(config.authConfig, err);
+                    }
+                }
                 winston.log('error', err.message);
                 resolve();
             } else {

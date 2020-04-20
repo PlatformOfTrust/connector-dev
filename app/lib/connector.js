@@ -173,13 +173,13 @@ function replacePlaceholders(config, template, params) {
  * Parses timestamp to date object.
  *
  * @param {String/Number} timestamp
- * @return
+ * @return {Date/String/Number}
  */
 const parseTs = function (timestamp) {
     if (!timestamp) return timestamp;
     try {
         let parsed = new Date(timestamp);
-        if (parsed.toString() === 'Invalid Date') {
+        if (parsed.toString() === 'Invalid Date' || parsed.toString() === 'Invalid date') {
             // Try parsing the timestamp to integer.
             timestamp = Number.parseInt(timestamp);
             parsed = new Date(timestamp);
@@ -261,7 +261,7 @@ const getData = async (reqBody) => {
     // Pick parameters from reqBody.
     const productCode = _.get(reqBody, PRODUCT_CODE) || 'default';
     const timestamp = parseTs(_.get(reqBody, TIMESTAMP) || moment.now());
-    const parameters = {
+    let parameters = {
         ids: _.uniq(_.get(reqBody, IDS) || []),
         start: parseTs(_.get(reqBody, START)),
         end: parseTs(_.get(reqBody, END) || timestamp)
@@ -283,6 +283,14 @@ const getData = async (reqBody) => {
     // ProductCode identifies requested data product.
     template.authConfig.template = config.template;
     template.productCode = productCode;
+
+    // Execute parameters plugin function.
+    for (let i = 0; i < template.plugins.length; i++) {
+        const plugin = plugins.find(p => p.name === template.plugins[i]);
+        if (!!plugin.parameters) {
+            parameters = await plugin.parameters(parameters);
+        }
+    }
 
     // Places values defined in config to template.
     template = replacePlaceholders(config, template, parameters);

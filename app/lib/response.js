@@ -162,9 +162,11 @@ const handleData = async (config, resourcePath, index, APIData, SOAPData) => {
             });
 
             // Execute data plugin function.
-            config.plugins.filter(p => !!p.data).map(async (plugin) => {
-                measurement.data = plugin.data(config.authConfig, measurement.data);
-            });
+            for (let i = 0; i < config.plugins.length; i++) {
+                if (!!config.plugins[i].data) {
+                    measurement.data = await config.plugins[i].data(config.authConfig, measurement.data);
+                }
+            }
 
             // Check for objects to be included to every measurement.
             if (config.generalConfig.include) {

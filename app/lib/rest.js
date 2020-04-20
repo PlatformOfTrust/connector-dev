@@ -36,10 +36,9 @@ const promiseRejectWithError = function (code, msg, reference) {
  * @param {Object} config
  * @param {Object} options
  * @param {String} resourcePath
- * @param {Array} query
  * @return {Promise}
  */
-const getDataByOptions = async (config, options, resourcePath, query) => {
+const getDataByOptions = async (config, options, resourcePath) => {
     if (!config.url && !resourcePath) {
         return promiseRejectWithError(500, 'No url or resourcePath found in authConfig.');
     } else {
@@ -87,9 +86,11 @@ const handleError = async (config, err) => {
     }
 
     // Execute onerror plugin function.
-    config.plugins.filter(p => !!p.onerror).map((plugin) => {
-        return plugin.onerror(config.authConfig, err);
-    });
+    for (let i = 0; i < config.plugins.length; i++) {
+        if (!!config.plugins[i].onerror) {
+            return await config.plugins[i].onerror(config.authConfig, err);
+        }
+    }
 
     // Give up.
     return promiseRejectWithError(err.statusCode, 'Internal Server Error.');
@@ -170,9 +171,11 @@ const requestData = async (config, resourcePath, index) => {
     }
 
     // Execute request plugin function.
-    config.plugins.filter(p => !!p.request).map(async (plugin) => {
-        options = await plugin.request(config.authConfig, options);
-    });
+    for (let i = 0; i < config.plugins.length; i++) {
+        if (!!config.plugins[i].request) {
+            options = await config.plugins[i].request(config.authConfig, options);
+        }
+    }
 
     /** First attempt */
     return getDataByOptions(config.authConfig, options, resourcePath).then(function (result) {
