@@ -1,7 +1,8 @@
 {
-  "template": "test",
+  "template": "siemens-navigator",
   "static": {
-    "type": "MeasureAirTemperatureCelciusDegree"
+    "username": "<username>",
+    "password": "<password>"
   },
   "dynamic": {
     "authConfig.resourcePath": "ids",
@@ -9,7 +10,8 @@
   },
   "request": {
     "ids": [
-      "<id>"
-    ]
+      "<meter-id>"
+    ],
+    "type": "<type>"
   }
 }

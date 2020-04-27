@@ -20,6 +20,7 @@ const fs = require('fs');
 const {
     PRODUCT_CODE,
     TIMESTAMP,
+    PARAMETERS,
     IDS,
     START,
     END,
@@ -142,11 +143,6 @@ function replacePlaceholders(config, template, params) {
         }
     }
 
-    /** Static parameters. */
-    if (Object.hasOwnProperty.call(config, 'static')) {
-        template = replacer(template, null, config.static);
-    }
-
     /** Dynamic parameters. */
     if (Object.hasOwnProperty.call(config, 'dynamic')) {
         Object.keys(config.dynamic).forEach(function (path) {
@@ -166,6 +162,12 @@ function replacePlaceholders(config, template, params) {
             }
         });
     }
+
+    /** Static parameters. */
+    if (Object.hasOwnProperty.call(config, 'static')) {
+        template = replacer(template, null, config.static);
+    }
+
     return template;
 }
 
@@ -268,6 +270,12 @@ const getData = async (reqBody) => {
         start: parseTs(_.get(reqBody, START)),
         end: parseTs(_.get(reqBody, END) || timestamp)
     };
+
+    // Leave unsupported parameters untouched.
+    _.unset(reqBody, IDS);
+    _.unset(reqBody, START);
+    _.unset(reqBody, END);
+    parameters = {...parameters, ..._.get(reqBody, PARAMETERS) || {}};
 
     // Get data product config
     let config = cache.getDoc('configs', productCode);
