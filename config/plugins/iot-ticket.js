@@ -39,9 +39,27 @@ const parameters = async (parameters) => {
 };
 
 /**
+ * Translates response id to request id.
+ *
+ * @param {Object} config
+ * @param {String/Object} id
+ * @return {String/Object}
+ */
+const id = async (config, id) => {
+    let translation;
+    try {
+        translation = config.parameters.ids.find(reqId => reqId.path.includes(id.toLowerCase()));
+    } catch (e) {
+        return id;
+    }
+    return translation || id;
+};
+
+/**
  * Expose plugin methods.
  */
 module.exports = {
     name: 'iot-ticket',
-    parameters
+    parameters,
+    id
 };

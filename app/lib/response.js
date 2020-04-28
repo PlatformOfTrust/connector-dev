@@ -218,10 +218,18 @@ const handleData = async (config, resourcePath, index, APIData, SOAPData) => {
         mergedData = Object.values(merged);
 
         // Sort data arrays.
-        for (let i = 0; i < mergedData.length; i++ ) {
-            mergedData[i][DATA || 'data'] =
-                mergedData[i][DATA || 'data']
+        for (let j = 0; j < mergedData.length; j++ ) {
+            mergedData[j][DATA || 'data'] =
+                mergedData[j][DATA || 'data']
                     .sort((a, b) => a[TIMESTAMP || 'timestamp'] - b[TIMESTAMP || 'timestamp']);
+
+            // Execute id plugin function.
+            for (let i = 0; i < config.plugins.length; i++) {
+                if (!!config.plugins[i].id) {
+                    mergedData[j][ID || 'id'] = await config.plugins[i].id(config, mergedData[j][ID || 'id']);
+                }
+            }
+
         }
     } catch (err) {
         winston.log('error', 'Failed to merge data. ' + err.message);
