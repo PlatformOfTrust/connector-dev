@@ -84,6 +84,13 @@ const handleData = async (config, resourcePath, index, APIData, SOAPData) => {
     if (!SOAPData) data = APIData;
     else data = SOAPData;
 
+    // Execute response plugin function.
+    for (let i = 0; i < config.plugins.length; i++) {
+        if (!!config.plugins[i].response) {
+            data = await config.plugins[i].response(config.authConfig, data);
+        }
+    }
+
     // Validate data object.
     if (!_.isObject(data)) return Promise.resolve();
     if (Object.keys(data).length === 0) return Promise.resolve();

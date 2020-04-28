@@ -131,7 +131,7 @@ function getTokenWithRefreshToken(authConfig, refreshToken) {
             delete options.form.client_secret;
             options.headers = {
                 Authorization: 'Basic '
-                    + new Buffer(authConfig.clientId + ':' + authConfig.clientSecret).toString('base64')
+                    + Buffer.from(authConfig.clientId + ':' + authConfig.clientSecret).toString('base64')
             };
             options.url = authConfig.url + authConfig.authPath + '/refresh?grant_type=refresh_token';
         }

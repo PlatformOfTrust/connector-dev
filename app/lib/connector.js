@@ -302,7 +302,7 @@ const getData = async (reqBody) => {
         }
     }
 
-    // Places values defined in config to template.
+    // Place values defined in config to template.
     template = replacePlaceholders(config, template, parameters);
 
     // Interpret mode.

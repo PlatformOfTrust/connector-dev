@@ -14,7 +14,7 @@
 const request = async (authConfig, options) => {
     // Authorize request.
     options.headers = {
-        Authorization: 'Basic ' + new Buffer(authConfig.username + ':' + authConfig.password).toString('base64')
+        Authorization: 'Basic ' + Buffer.from(authConfig.username + ':' + authConfig.password).toString('base64')
     };
     return options;
 };
