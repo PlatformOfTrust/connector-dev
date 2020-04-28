@@ -6,13 +6,13 @@
 /**
  * Converts timestamps.
  *
- * @param {Object} authConfig
+ * @param {Object} config
  * @param {Object} options
  * @return {Object}
  */
-const request = async (authConfig, options) => {
+const request = async (config, options) => {
     const query = options.query;
-    if (authConfig.url.includes('eadvantage.siemens.com')) {
+    if (config.authConfig.url.includes('eadvantage.siemens.com')) {
         /** Timestamp conversion. */
         for (let i = 0; i < query.length; i++) {
             if (Object.keys(query[i])[0] === 'utcStartTimestamp'

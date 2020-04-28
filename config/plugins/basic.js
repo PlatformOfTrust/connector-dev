@@ -7,15 +7,19 @@
  * Composes authorization header and
  * includes it to the http request options.
  *
- * @param {Object} authConfig
+ * @param {Object} config
  * @param {Object} options
  * @return {Object}
  */
-const request = async (authConfig, options) => {
+const request = async (config, options) => {
     // Authorize request.
-    options.headers = {
-        Authorization: 'Basic ' + Buffer.from(authConfig.username + ':' + authConfig.password).toString('base64')
-    };
+    try {
+        options.headers = {
+            Authorization: 'Basic ' + Buffer.from(config.authConfig.username + ':' + config.authConfig.password).toString('base64')
+        };
+    } catch (err) {
+        console.log(err.message);
+    }
     return options;
 };
 

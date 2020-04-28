@@ -114,16 +114,18 @@ const createSOAPClient = async (config, url, pathArray) => {
                 // Execute onerror plugin function.
                 for (let i = 0; i < config.plugins.length; i++) {
                     if (!!config.plugins[i].onerror) {
-                        return await config.plugins[i].onerror(config.authConfig, err);
+                        return await config.plugins[i].onerror(config, err);
                     }
                 }
                 winston.log('error', err.message);
                 resolve();
             } else {
                 // Execute request plugin function.
-                config.plugins.filter(p => !!p.request).map(async (plugin) => {
-                    client = await plugin.request(config.authConfig, client);
-                });
+                for (let i = 0; i < config.plugins.length; i++) {
+                    if (!!config.plugins[i].request) {
+                        client = await config.plugins[i].request(config, client);
+                    }
+                }
 
                 let data;
                 for (let i = 0; i < pathArray.length; i++) {

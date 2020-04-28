@@ -88,7 +88,7 @@ const handleError = async (config, err) => {
     // Execute onerror plugin function.
     for (let i = 0; i < config.plugins.length; i++) {
         if (!!config.plugins[i].onerror) {
-            return await config.plugins[i].onerror(config.authConfig, err);
+            return await config.plugins[i].onerror(config, err);
         }
     }
 
@@ -173,7 +173,7 @@ const requestData = async (config, resourcePath, index) => {
     // Execute request plugin function.
     for (let i = 0; i < config.plugins.length; i++) {
         if (!!config.plugins[i].request) {
-            options = await config.plugins[i].request(config.authConfig, options);
+            options = await config.plugins[i].request(config, options);
         }
     }
 

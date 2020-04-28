@@ -10,14 +10,14 @@ const soap = require('soap');
 /**
  * Configures SOAP authentication.
  *
- * @param {Object} authConfig
+ * @param {Object} config
  * @param {Object} options
  * @return {Object}
  */
-const request = async (authConfig, options) => {
+const request = async (config, options) => {
     // Authorize request.
     try {
-        options.setSecurity(new soap.NTLMSecurity(authConfig.username, authConfig.password));
+        options.setSecurity(new soap.NTLMSecurity(config.authConfig.username, authConfig.password));
     } catch (err) {
         console.log(err.message);
     }

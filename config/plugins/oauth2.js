@@ -209,18 +209,18 @@ const onerror = async (authConfig, err) => {
 
 module.exports = {
     name: 'oauth2',
-    request: async (authConfig, options) => {
+    request: async (config, options) => {
         // Check for necessary information.
-        if (!authConfig.authPath || !authConfig.url) {
+        if (!config.authConfig.authPath || !config.authConfig.url) {
             return promiseRejectWithError(500, 'Insufficient authentication configurations.');
         }
 
         // Check for existing grant.
-        let grant = cache.getDoc('grants', authConfig.template);
+        let grant = cache.getDoc('grants', config.authConfig.template);
         if (!grant) grant = {};
         if (!Object.hasOwnProperty.call(grant, 'access_token')) {
             // Request access token.
-            grant = await requestToken(authConfig);
+            grant = await requestToken(config.authConfig);
             if (!grant.access_token) return promiseRejectWithError(500, 'Authentication failed.');
         }
 

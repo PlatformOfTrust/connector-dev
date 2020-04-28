@@ -87,7 +87,7 @@ const handleData = async (config, resourcePath, index, APIData, SOAPData) => {
     // Execute response plugin function.
     for (let i = 0; i < config.plugins.length; i++) {
         if (!!config.plugins[i].response) {
-            data = await config.plugins[i].response(config.authConfig, data);
+            data = await config.plugins[i].response(config, data);
         }
     }
 
@@ -171,7 +171,7 @@ const handleData = async (config, resourcePath, index, APIData, SOAPData) => {
             // Execute data plugin function.
             for (let i = 0; i < config.plugins.length; i++) {
                 if (!!config.plugins[i].data) {
-                    measurement.data = await config.plugins[i].data(config.authConfig, measurement.data);
+                    measurement.data = await config.plugins[i].data(config, measurement.data);
                 }
             }
 

@@ -298,7 +298,7 @@ const getData = async (reqBody) => {
     for (let i = 0; i < template.plugins.length; i++) {
         const plugin = plugins.find(p => p.name === template.plugins[i]);
         if (!!plugin.parameters) {
-            parameters = await plugin.parameters(parameters);
+            parameters = await plugin.parameters(config, parameters);
         }
     }
 

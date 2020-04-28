@@ -6,10 +6,11 @@
 /**
  * Manipulates request parameters.
  *
+ * @param {Object} config
  * @param {Object} parameters
  * @return {Object}
  */
-const parameters = async (parameters) => {
+const parameters = async (config, parameters) => {
     try {
         if (Object.hasOwnProperty.call(parameters, 'ids')) {
             if (Array.isArray(parameters.ids)) {
