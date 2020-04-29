@@ -75,8 +75,7 @@ const handleError = async (config, err) => {
     winston.log('info', config.authConfig.template + ': Response with status code ' + err.statusCode);
 
     /** Connection error handling. */
-    if (err.statusCode === 404
-        || err.statusCode === 500
+    if (err.statusCode === 500
         || err.statusCode === 502
         || err.statusCode === 503
         || err.statusCode === 504
@@ -188,7 +187,7 @@ const requestData = async (config, resourcePath, index) => {
         return Promise.resolve(result);
     }).catch(function (err) {
         if (Object.hasOwnProperty.call(err, 'statusCode')) {
-            if (err.statusCode === 404) {
+            if (err.statusCode === 404 || err.statusCode === 400) {
                 return Promise.resolve([]);
             }
         }
