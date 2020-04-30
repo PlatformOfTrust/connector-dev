@@ -35,12 +35,12 @@ const promiseRejectWithError = function (code, msg, reference) {
  *
  * @param {Object} config
  * @param {Object} options
- * @param {String} resourcePath
+ * @param {String} path
  * @return {Promise}
  */
-const getDataByOptions = async (config, options, resourcePath) => {
-    if (!config.url && !resourcePath) {
-        return promiseRejectWithError(500, 'No url or resourcePath found in authConfig.');
+const getDataByOptions = async (config, options, path) => {
+    if (!config.url && !path) {
+        return promiseRejectWithError(500, 'No url or path found in authConfig.');
     } else {
         // Compose query string.
         let queryString = '';
@@ -132,17 +132,17 @@ const parseResBody = function (response) {
  * Structures required information for data request.
  *
  * @param {Object} config
- * @param {String} resourcePath
+ * @param {String} path
  *   Resource path, which will be included to the request.
  * @param {Number} index
  * @return {Promise}
  */
-const requestData = async (config, resourcePath, index) => {
+const requestData = async (config, path, index) => {
     // Initialize request options.
     let method = 'GET';
     let options = {
         method: method,
-        url: resourcePath.includes('://') ? resourcePath : config.authConfig.url + resourcePath,
+        url: path.includes('://') ? path : config.authConfig.url + path,
         headers: config.authConfig.headers || {},
         resolveWithFullResponse: true,
         query: []
@@ -177,9 +177,9 @@ const requestData = async (config, resourcePath, index) => {
     }
 
     /** First attempt */
-    return getDataByOptions(config.authConfig, options, resourcePath).then(function (result) {
+    return getDataByOptions(config.authConfig, options, path).then(function (result) {
         // Handle received data.
-        if (result !== null) return response.handleData(config, resourcePath, index, parseResBody(result));
+        if (result !== null) return response.handleData(config, path, index, parseResBody(result));
         // Handle connection timed out.
         return promiseRejectWithError(522, 'Connection timed out.');
     }).then(function (result) {
@@ -194,10 +194,10 @@ const requestData = async (config, resourcePath, index) => {
         return handleError(config, err).then(function () {
             /** Second attempt */
             // If error handler recovers from the error, another attempt is initiated.
-            return getData(config, resourcePath);
+            return getData(config, path);
         }).then(function (result) {
             // Handle received data.
-            if (result !== null) return response.handleData(config, resourcePath, index, parseResBody(result));
+            if (result !== null) return response.handleData(config, path, index, parseResBody(result));
             return promiseRejectWithError(522, 'Connection timed out.');
         }).then(function (result) {
             // Return received data.

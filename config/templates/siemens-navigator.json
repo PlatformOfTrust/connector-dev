@@ -8,7 +8,7 @@
     "url": "https://eadvantage.siemens.com",
     "username": "${username}",
     "password": "${password}",
-    "resourcePath": "/remote/release/meter/${id}/readings"
+    "path": "/remote/release/meter/${id}/readings"
   },
   "dataObjects": [
     "items"
@@ -27,7 +27,7 @@
       "start": "utcStartTimestamp"
     },
     "hardwareId": {
-      "resourcePathIndex": 4
+      "pathIndex": 4
     },
     "timestamp": {
       "dataObjectProperty": "utcRectime"

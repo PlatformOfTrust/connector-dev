@@ -5,7 +5,7 @@
     "password": "<password>"
   },
   "dynamic": {
-    "authConfig.resourcePath": "ids",
+    "authConfig.path": "ids",
     "dataPropertyMappings": "type"
   },
   "request": {

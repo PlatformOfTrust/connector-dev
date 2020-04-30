@@ -8,7 +8,7 @@
     "username": "${username}",
     "password": "${password}",
     "soapPath": "Fidelix.FidelixSoap.getPointData",
-    "resourcePath": {
+    "path": {
       "point_id": "${id}"
     }
   },

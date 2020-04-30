@@ -7,7 +7,7 @@
     "type": "MeasureAirTemperatureCelciusDegree"
   },
   "dynamic": {
-    "authConfig.resourcePath": "ids"
+    "authConfig.path": "ids"
   },
   "request": {
     "ids": [

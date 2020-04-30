@@ -325,12 +325,12 @@ const getData = async (reqBody) => {
     }
 
     // Check that resource path is defined.
-    if (!Object.hasOwnProperty.call(template.authConfig, 'resourcePath')) {
+    if (!Object.hasOwnProperty.call(template.authConfig, 'path')) {
         return rest.promiseRejectWithError(500, 'Insufficient resource configurations.');
     }
 
     let pathArray = [];
-    let path = template.authConfig.resourcePath;
+    let path = template.authConfig.path;
     if (!Array.isArray(path)) pathArray.push(path);
     else pathArray = path;
 

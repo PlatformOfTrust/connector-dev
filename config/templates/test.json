@@ -2,7 +2,7 @@
   "plugins": [],
   "protocol": "local",
   "authConfig": {
-    "resourcePath": "${id}"
+    "path": "${id}"
   },
   "dataObjects": [
     ""

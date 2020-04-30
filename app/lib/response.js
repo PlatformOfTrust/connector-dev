@@ -49,7 +49,7 @@ const mapArrays = function (arrays) {
  * Picks value from response object by object property path or index.
  *
  * @param {Object} config
- * @param {String} resourcePath
+ * @param {String} path
  *   Resource path.
  * @param {Object} object
  *   Target object.
@@ -57,13 +57,13 @@ const mapArrays = function (arrays) {
  *   Config property key.
  * @return value
  */
-function getValueFromResponse(config, resourcePath, object, key) {
+function getValueFromResponse(config, path, object, key) {
     if (config[key]) {
         if (config[key].dataObjectProperty) {
             return _.get(object, config[key].dataObjectProperty);
         }
-        if (config[key].resourcePathIndex) {
-            return resourcePath.split('/')[config[key].resourcePathIndex];
+        if (config[key].pathIndex) {
+            return path.split('/')[config[key].pathIndex];
         }
     }
     return undefined;
@@ -73,13 +73,13 @@ function getValueFromResponse(config, resourcePath, object, key) {
  * Handles response data.
  *
  * @param {Object} config
- * @param {String} resourcePath
+ * @param {String} path
  * @param {Number} index
  * @param [APIData]
  * @param [SOAPData]
  * @return {Promise}
  */
-const handleData = async (config, resourcePath, index, APIData, SOAPData) => {
+const handleData = async (config, path, index, APIData, SOAPData) => {
     let data = {};
     if (!SOAPData) data = APIData;
     else data = SOAPData;
@@ -109,8 +109,8 @@ const handleData = async (config, resourcePath, index, APIData, SOAPData) => {
     if (config.authConfig.type === 'soap'
         || config.authConfig.type === 'soap-basic'
         || config.authConfig.type === 'soap-ntlm') {
-        data.hardwareId = resourcePath[Object.keys(resourcePath)[0]];
-        resourcePath = '';
+        data.hardwareId = path[Object.keys(path)[0]];
+        path = '';
     }
 
     let measurements = [];
@@ -135,10 +135,10 @@ const handleData = async (config, resourcePath, index, APIData, SOAPData) => {
         for (let j = 0; j < dataObjects.length; j++) {
 
             // Look for hardwareId.
-            let hardwareId = getValueFromResponse(config.generalConfig, resourcePath, dataObjects[j], 'hardwareId');
+            let hardwareId = getValueFromResponse(config.generalConfig, path, dataObjects[j], 'hardwareId');
 
             // Look for timestamp.
-            let timestamp = getValueFromResponse(config.generalConfig, resourcePath, dataObjects[j], 'timestamp');
+            let timestamp = getValueFromResponse(config.generalConfig, path, dataObjects[j], 'timestamp');
             if (!timestamp) timestamp = moment.now();
 
             // Map data from the response data.

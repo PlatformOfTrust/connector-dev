@@ -9,7 +9,7 @@
     "authPath": "/GetToken",
     "username": "${username}",
     "password": "${password}",
-    "resourcePath": "/Values/${id}"
+    "path": "/Values/${id}"
   },
   "dataObjects": [
     ""
