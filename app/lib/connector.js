@@ -41,7 +41,7 @@ const configDir = './config';
 const pluginDir = './config/plugins';
 const templateDir = './config/templates';
 
-// Create plugin, config and template directory, if they do not exist.
+// Make sure plugin, config and template directory exists.
 if (!fs.existsSync(pluginDir)) fs.mkdirSync(pluginDir);
 if (!fs.existsSync(configDir)) fs.mkdirSync(configDir);
 if (!fs.existsSync(templateDir)) fs.mkdirSync(templateDir);
@@ -60,7 +60,7 @@ function loadFiles(dir, ext, collection) {
     fs.readdir(dir, function (err, files) {
         if (err) return console.log('Unable to scan directory: ' + err);
         files.forEach(function (file) {
-            // Handle only files with .json file extension.
+            // Handle only files with given file extension.
             if (file.substr(-ext.length) !== ext) return;
             fs.readFile(dir + '/' + file, 'utf8', function (err, data) {
                 if (err) return winston.log('error', 'File read error', err.message);
@@ -84,7 +84,7 @@ function loadFiles(dir, ext, collection) {
     });
 }
 
-// Load plugins, configurations and templates
+// Load plugins, configurations and templates.
 loadFiles(pluginDir, '.js', 'plugins');
 loadFiles(configDir, '.json', 'configs');
 loadFiles(templateDir, '.json', 'templates');
@@ -186,7 +186,7 @@ const parseTs = function (timestamp) {
             timestamp = Number.parseInt(timestamp);
             parsed = new Date(timestamp);
         }
-        // Sometimes a timestamp in seconds is encountered and needs to be converted to millis.
+        // Sometimes a timestamp in seconds is encountered and it needs to be converted to millis.
         if (parsed.getFullYear() === 1970) parsed = new Date(timestamp * 1000);
         return parsed;
     } catch (err) {
@@ -262,7 +262,7 @@ const getData = async (reqBody) => {
         if (validation.error) return rest.promiseRejectWithError(422, validation.error);
     }
 
-    // Pick parameters from reqBody.
+    // Pick supported parameters from reqBody.
     const productCode = _.get(reqBody, PRODUCT_CODE) || 'default';
     const timestamp = parseTs(_.get(reqBody, TIMESTAMP) || moment.now());
     let parameters = {
@@ -346,7 +346,7 @@ const getData = async (reqBody) => {
     } else {
         // Check that the protocol is supported.
         if (!Object.hasOwnProperty.call(protocols, template.protocol)) {
-            return rest.promiseRejectWithError(500, 'Connection protocol ' + template.protocol + ' not supported.');
+            return rest.promiseRejectWithError(500, 'Connection protocol ' + template.protocol + ' is not supported.');
         } else {
             items = await protocols[template.protocol].getData(template, pathArray);
             if (!items) items = [];
