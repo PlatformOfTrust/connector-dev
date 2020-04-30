@@ -102,7 +102,7 @@ const createSOAPClient = async (config, url, pathArray) => {
     const receivedData = [];
     const username = config.authConfig.username;
     const password = config.authConfig.password;
-    const SOAPFunction = config.authConfig.soapPath;
+    const SOAPFunction = config.authConfig.function;
     let options = {wsdl_headers: {Authorization: "Basic " + new Buffer(username + ":" + password).toString("base64")}};
     if (config.authConfig.type === 'soap-ntlm') {
         options = {};
