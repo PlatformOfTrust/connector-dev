@@ -5,10 +5,10 @@
   ],
   "protocol": "rest",
   "authConfig": {
-    "path": "/process/read/${deviceId}?datanodes=${path}",
     "url": "https://my.iot-ticket.com/api/v1",
     "username": "${username}",
-    "password": "${password}"
+    "password": "${password}",
+    "path": "/process/read/${deviceId}?datanodes=${path}"
   },
   "dataObjects": [
     "datanodeReads"

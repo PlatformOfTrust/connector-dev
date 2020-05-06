@@ -12,11 +12,15 @@ const SignatureStrategy = require('./strategies/signature').SignatureStrategy;
  * Configures strategies, which are extensible set of plugins.
  */
 
-/** Import platform of trust definitions. */
+/** Import Platform of Trust definitions. */
 const { supportedHeaders } = require('../../config/definitions/request');
 
 /**
- * Extracts identity id from Platform of Trust token.
+ * Extracts identity id from token.
+ *
+ * @param {String} token
+ * @return {String}
+ *   User or app id.
  */
 const extractId = function (token) {
     return JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString('binary')).sub
