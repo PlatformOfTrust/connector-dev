@@ -152,10 +152,15 @@ const stringifyBody = function (body) {
  *
  * @param {Object} body
  *   The payload to sign.
+ * @param {String} [key]
+ *   Private key.
  * @return {Object}
  *   The signature object.
  */
-const generateSignature = function (body) {
+const generateSignature = function (body, key) {
+    // Use local private key, if not given.
+    if (!key) key = privateKey;
+
     // Initialize signature object.
     let signature = {
         type: 'RsaSignature2018',
@@ -166,8 +171,9 @@ const generateSignature = function (body) {
     // Create HMAC-SHA256 signature in base64 encoded format.
     try {
         signature.signatureValue = crypto
-            .createHmac('sha256', Buffer.from(formatPrivateKey(privateKey), 'utf8'))
-            .update(stringifyBody({...body, __signed__: signature.created})).digest('base64')
+            .createSign('sha256')
+            .update(stringifyBody({...body, __signed__: signature.created}))
+            .sign({key, padding: crypto.constants.RSA_PKCS1_PSS_PADDING}, 'base64');
     } catch (err) {
         winston.log('error', err.message);
     }
@@ -181,7 +187,7 @@ const generateSignature = function (body) {
  *   Payload to validate.
  * @param {String} signature
  *   Signature to validate.
- * @param {String} publicKey
+ * @param {String/Object} publicKey
  *   Public key used for validation.
  * @return {Boolean}
  *   True if signature is valid, false otherwise.
