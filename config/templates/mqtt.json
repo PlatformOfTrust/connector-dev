@@ -5,7 +5,7 @@
     "cert": "${cert}",
     "key": "${key}",
     "url": "${url}",
-    "path": "${ids}",
+    "path": "${id}",
     "topic": "${topic}"
   },
   "dataObjects": [
@@ -13,7 +13,7 @@
   ],
   "dataPropertyMappings": {
     "MeasureCount": "moveCount",
-    "MeasureDistanceMillimeters": "dist"
+    "MeasureDistanceMeters": "dist"
   },
   "generalConfig": {
     "sourceName": {
