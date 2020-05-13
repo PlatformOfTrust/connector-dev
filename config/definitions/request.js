@@ -15,7 +15,8 @@ const definitions = {
     PARAMETERS: 'parameters',
     IDS: 'parameters.ids',
     START: 'parameters.startTime',
-    END: 'parameters.endTime'
+    END: 'parameters.endTime',
+    DATA_TYPES:  'parameters.dataTypes'
 };
 
 /** List of supported headers, and if they're required or not. */
@@ -49,6 +50,9 @@ const supportedParameters = {
         required: false
     },
     [definitions.END]: {
+        required: false
+    },
+    [definitions.DATA_TYPES]: {
         required: false
     }
 };

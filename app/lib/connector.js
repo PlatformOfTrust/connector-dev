@@ -24,6 +24,7 @@ const {
     IDS,
     START,
     END,
+    DATA_TYPES,
     supportedParameters
 } = require('../../config/definitions/request');
 
@@ -268,7 +269,8 @@ const getData = async (reqBody) => {
     let parameters = {
         ids: _.uniq(_.get(reqBody, IDS) || []),
         start: parseTs(_.get(reqBody, START)),
-        end: parseTs(_.get(reqBody, END) || timestamp)
+        end: parseTs(_.get(reqBody, END) || timestamp),
+        dataTypes: _.uniq(_.get(reqBody, DATA_TYPES) || []),
     };
 
     // Leave unsupported parameters untouched.

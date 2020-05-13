@@ -1,0 +1,29 @@
+{
+  "plugins": [],
+  "protocol": "mqtt",
+  "authConfig": {
+    "cert": "${cert}",
+    "key": "${key}",
+    "url": "${url}",
+    "path": "${ids}",
+    "topic": "${topic}"
+  },
+  "dataObjects": [
+    ""
+  ],
+  "dataPropertyMappings": {
+    "MeasureCount": "moveCount",
+    "MeasureDistanceMillimeters": "dist"
+  },
+  "generalConfig": {
+    "sourceName": {
+      "dataObjectProperty": "tsmId"
+    },
+    "hardwareId": {
+      "dataObjectProperty": "tsmTuid"
+    },
+    "timestamp": {
+      "dataObjectProperty": "tsmTs"
+    }
+  }
+}

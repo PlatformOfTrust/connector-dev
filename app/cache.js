@@ -18,6 +18,7 @@ let cache = {
     templates: {cache: new NodeCache()},
     publicKeys: {cache: new NodeCache()},
     dataProducts: {cache: new NodeCache()},
+    measurements: {cache: new NodeCache()}
 };
 
 const getDoc = function (collection, id) {
