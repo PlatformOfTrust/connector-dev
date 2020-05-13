@@ -22,9 +22,10 @@ const getData = async (config, pathArray) => {
     const items = [];
     for (let p = 0; p < pathArray.length; p++) {
         try {
-            const result = cache.getDoc('measurements', config.productCode);
-            const id = Object.keys(result).find(i => i.includes(config.generalConfig.hardwareId.dataObjectProperty));
-            if (id) items.push(response.handleData(config, pathArray[p], p, result[id]));
+            const measurements = Object.values(cache.getDoc('measurements', config.productCode));
+            const key = config.generalConfig.hardwareId.dataObjectProperty;
+            const measurement = measurements.find(i => i[key] === pathArray[p]);
+            if (measurement) items.push(await response.handleData(config, pathArray[p], p, measurement));
         } catch (e) {
             console.log(e.message);
         }
