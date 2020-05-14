@@ -327,7 +327,7 @@ const getData = async (reqBody) => {
         if (template.plugins.length !== Object.keys(plugins).filter(p => template.plugins.includes(p)).length) {
             return rest.promiseRejectWithError(500, 'Missing required plugins.');
         } else {
-            template.plugins = Object.values(plugins).filter(p => template.plugins.includes(p.name));
+            template.plugins = Object.keys(plugins).filter(n => template.plugins.includes(n)).map(n => plugins[n]);
         }
     } else {
         template.plugins = [];
