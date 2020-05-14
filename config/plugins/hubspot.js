@@ -4,13 +4,21 @@
  */
 const Hubspot = require('hubspot');
 
-// Initialize object for mapping data product specific clients.
-const clients = {};
-
 /**
  * Hubspot plugin.
  */
 
+// Initialize object for mapping data product specific clients.
+const clients = {};
+
+/**
+ * Consumes HubSpot API by given method.
+ *
+ * @param {Object} config
+ * @param {Object} res
+ * @return {Object}
+ *   Response from HubSpot API
+ */
 const response = async (config, res) => {
     let response;
 
