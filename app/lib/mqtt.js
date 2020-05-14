@@ -19,17 +19,39 @@ const clients = {};
  * @return {Array}
  */
 const getData = async (config, pathArray) => {
+    let options;
     const items = [];
-    for (let p = 0; p < pathArray.length; p++) {
-        try {
-            const measurements = Object.values(cache.getDoc('measurements', config.productCode));
-            const key = config.generalConfig.hardwareId.dataObjectProperty;
-            const measurement = measurements.find(i => i[key] === pathArray[p]);
+
+    /** Data fetching. */
+    try {
+        // Initialize options.
+        options = {
+            id: config.generalConfig.hardwareId.dataObjectProperty
+        };
+
+        // Execute request plugin function.
+        for (let i = 0; i < config.plugins.length; i++) {
+            if (!!config.plugins[i].request) {
+                options = await config.plugins[i].request(config, options);
+            }
+        }
+
+        const result = Object.values(cache.getDoc('measurements', config.productCode));
+        for (let p = 0; p < pathArray.length; p++) {
+            const measurement = result.find(i => i[options.id] === pathArray[p]);
             if (measurement) items.push(await response.handleData(config, pathArray[p], p, measurement));
-        } catch (e) {
-            console.log(e.message);
+        }
+    } catch (err) {
+        winston.log('error', err.message);
+
+        // Execute onerror plugin function.
+        for (let i = 0; i < config.plugins.length; i++) {
+            if (!!config.plugins[i].onerror) {
+                return await config.plugins[i].onerror(config, err);
+            }
         }
     }
+
     return items;
 };
 
@@ -40,28 +62,36 @@ const getData = async (config, pathArray) => {
  * @param {String} productCode
  */
 const connect = function (config, productCode) {
-    const url = config.static.url;
-    const topic = config.static.topic;
-    clients[productCode] = mqtt.connect(url, {
-        key:  fs.readFileSync(config.static.key),
-        cert: fs.readFileSync(config.static.cert),
-    });
+    try {
+        const url = config.static.url;
+        const topic = config.static.topic;
 
-    clients[productCode].on('connect', () => {
-        clients[productCode].subscribe(topic);
-        winston.log('info', productCode + ' subscribed to topic ' + topic + '.');
-    });
+        // Connect to broker.
+        clients[productCode] = mqtt.connect(url, {
+            key:  fs.readFileSync(config.static.key),
+            cert: fs.readFileSync(config.static.cert),
+        });
 
-    clients[productCode].on('message', (topic, message) => {
-        try {
-            const result = cache.getDoc('measurements', productCode) || {};
-            result[topic] = JSON.parse(message.toString());
-            cache.setDoc('measurements', productCode, result);
-        } catch (e) {
-            console.log(e.message)
-        }
-        clients[productCode].end();
-    });
+        // Subscribe to defined topic on connect.
+        clients[productCode].on('connect', () => {
+            clients[productCode].subscribe(topic);
+            winston.log('info', productCode + ' subscribed to topic ' + topic + '.');
+        });
+
+        // Store received measurements to cache on receive.
+        clients[productCode].on('message', (topic, message) => {
+            try {
+                const result = cache.getDoc('measurements', productCode) || {};
+                result[topic] = JSON.parse(message.toString());
+                cache.setDoc('measurements', productCode, result);
+            } catch (err) {
+                winston.log('error', err.message);
+            }
+            clients[productCode].end();
+        });
+    } catch (err) {
+        winston.log('error', err.message);
+    }
 };
 
 /**
