@@ -32,13 +32,13 @@ const {
 const protocols = {};
 const plugins = {};
 
-// Set directory for config and template files.
+// Set directories.
 const templatesDir = './config/templates';
 const protocolsDir = './app/protocols';
 const pluginsDir = './config/plugins';
 const configsDir = './config';
 
-// Make sure plugin, config and template directory exists.
+// Make sure directories for templates, protocols, configs and plugins exists.
 if (!fs.existsSync(templatesDir)) fs.mkdirSync(templatesDir);
 if (!fs.existsSync(protocolsDir)) fs.mkdirSync(protocolsDir);
 if (!fs.existsSync(configsDir)) fs.mkdirSync(configsDir);
