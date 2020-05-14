@@ -36,8 +36,10 @@ const getData = async (config, pathArray) => {
             }
         }
 
+        // Retrieve latest measurements from cache.
         const result = Object.values(cache.getDoc('measurements', config.productCode));
         for (let p = 0; p < pathArray.length; p++) {
+            // Find measurement by id.
             const measurement = result.find(i => i[options.id] === pathArray[p]);
             if (measurement) items.push(await response.handleData(config, pathArray[p], p, measurement));
         }
