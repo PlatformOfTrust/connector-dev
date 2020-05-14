@@ -1,7 +1,9 @@
 {
   "template": "hubspot",
   "static": {
-    "apikey": "<apikey>"
+    "apikey": "<apikey>",
+    "api": "companies",
+    "method": "getById"
   },
   "dynamic": {
     "authConfig.path": "ids"

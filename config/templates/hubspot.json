@@ -5,9 +5,9 @@
   "protocol": "custom",
   "authConfig": {
     "apikey": "${apikey}",
-    "path": "${id}",
-    "api": "companies",
-    "method": "getById"
+    "api": "${api}",
+    "method": "${method}",
+    "path": "${id}"
   },
   "dataObjects": [
     ""
