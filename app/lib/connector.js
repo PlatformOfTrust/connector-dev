@@ -3,10 +3,10 @@
  * Module dependencies.
  */
 const winston = require('../../logger.js');
+const rest = require('../protocols/rest');
 const validator = require('./validator');
 const cache = require('../cache');
 const moment = require('moment');
-const rest = require('./rest');
 const _ = require('lodash');
 const fs = require('fs');
 
@@ -28,26 +28,21 @@ const {
     supportedParameters
 } = require('../../config/definitions/request');
 
-/** Supported connection protocols. */
-const protocols = {
-    custom: require('./custom'),
-    local: require('./local'),
-    rest: require('./rest'),
-    soap: require('./soap'),
-    mqtt: require('./mqtt'),
-};
-
-const plugins = [];
+// Initialize objects for protocols and plugins.
+const protocols = {};
+const plugins = {};
 
 // Set directory for config and template files.
-const configDir = './config';
-const pluginDir = './config/plugins';
-const templateDir = './config/templates';
+const templatesDir = './config/templates';
+const protocolsDir = './app/protocols';
+const pluginsDir = './config/plugins';
+const configsDir = './config';
 
 // Make sure plugin, config and template directory exists.
-if (!fs.existsSync(pluginDir)) fs.mkdirSync(pluginDir);
-if (!fs.existsSync(configDir)) fs.mkdirSync(configDir);
-if (!fs.existsSync(templateDir)) fs.mkdirSync(templateDir);
+if (!fs.existsSync(templatesDir)) fs.mkdirSync(templatesDir);
+if (!fs.existsSync(protocolsDir)) fs.mkdirSync(protocolsDir);
+if (!fs.existsSync(configsDir)) fs.mkdirSync(configsDir);
+if (!fs.existsSync(pluginsDir)) fs.mkdirSync(pluginsDir);
 
 /**
  * Caches or requires file contents.
@@ -73,7 +68,6 @@ function loadFiles(dir, ext, collection) {
                         case '.json':
                             const config = JSON.parse(data);
                             cache.setDoc(collection, file.split('.')[0], config);
-                            winston.log('info', 'Loaded ' + dir + '/' + file + '.');
                             // If config has protocol mqtt, connect to the broker.
                             if (Object.hasOwnProperty.call(config, 'static')) {
                                 if (Object.hasOwnProperty.call(config.static, 'topic')) {
@@ -83,9 +77,10 @@ function loadFiles(dir, ext, collection) {
                             break;
                         /** JavaScript. */
                         case '.js':
-                            plugins.push(require('../../config/plugins/' + file));
+                            eval(collection)[file.split('.')[0]] = require('../.' + dir + '/' + file);
                             break;
                     }
+                    winston.log('info', 'Loaded ' + dir + '/' + file + '.');
                 } catch (err) {
                     winston.log('error', err.message);
                 }
@@ -95,9 +90,10 @@ function loadFiles(dir, ext, collection) {
 }
 
 // Load plugins, configurations and templates.
-loadFiles(pluginDir, '.js', 'plugins');
-loadFiles(configDir, '.json', 'configs');
-loadFiles(templateDir, '.json', 'templates');
+loadFiles(templatesDir, '.json', 'templates');
+loadFiles(protocolsDir, '.js', 'protocols');
+loadFiles(configsDir, '.json', 'configs');
+loadFiles(pluginsDir, '.js', 'plugins');
 
 /**
  * Replaces placeholder/s with given value/s.
@@ -308,9 +304,10 @@ const getData = async (reqBody) => {
 
     // Execute parameters plugin function.
     for (let i = 0; i < template.plugins.length; i++) {
-        const plugin = plugins.find(p => p.name === template.plugins[i]);
-        if (!!plugin.parameters) {
-            parameters = await plugin.parameters(config, parameters);
+        if (Object.hasOwnProperty.call(plugins, template.plugins[i])) {
+            if (!!plugins[template.plugins[i]].parameters) {
+                parameters = await plugins[template.plugins[i]].parameters(config, parameters);
+            }
         }
     }
 
@@ -327,10 +324,10 @@ const getData = async (reqBody) => {
 
     // Attach plugins.
     if (Object.hasOwnProperty.call(template, 'plugins')) {
-        if (template.plugins.length !== plugins.filter(p => template.plugins.includes(p.name)).length) {
+        if (template.plugins.length !== Object.keys(plugins).filter(p => template.plugins.includes(p)).length) {
             return rest.promiseRejectWithError(500, 'Missing required plugins.');
         } else {
-            template.plugins = plugins.filter(p => template.plugins.includes(p.name));
+            template.plugins = Object.values(plugins).filter(p => template.plugins.includes(p.name));
         }
     } else {
         template.plugins = [];

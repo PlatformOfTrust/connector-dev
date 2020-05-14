@@ -2,7 +2,7 @@
 /**
  * Module dependencies.
  */
-const response = require('./response');
+const response = require('../lib/response');
 
 /**
  * Local library.

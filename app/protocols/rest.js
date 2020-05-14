@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 const winston = require('../../logger.js');
-const response = require('./response');
+const response = require('../lib/response');
 const rp = require('request-promise');
 
 /**

@@ -2,7 +2,7 @@
 /**
  * Module dependencies.
  */
-const response = require('./response');
+const response = require('../lib/response');
 const winston = require('../../logger.js');
 
 /**
@@ -10,7 +10,6 @@ const winston = require('../../logger.js');
  *
  * @param {Object} config
  * @param {Array} pathArray
- *   Resource path, which will be included to the resource url.
  * @return {Array}
  */
 const getData = async (config, pathArray) => {
