@@ -89,7 +89,6 @@ const connect = function (config, productCode) {
             } catch (err) {
                 winston.log('error', err.message);
             }
-            clients[productCode].end();
         });
     } catch (err) {
         winston.log('error', err.message);
