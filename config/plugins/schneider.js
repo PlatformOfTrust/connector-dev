@@ -20,7 +20,7 @@ const parameters = async (config, parameters) => {
             }
         }
         return parameters;
-    } catch (e) {
+    } catch (err) {
         return parameters;
     }
 };

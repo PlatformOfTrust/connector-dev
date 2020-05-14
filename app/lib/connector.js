@@ -30,9 +30,11 @@ const {
 
 /** Supported connection protocols. */
 const protocols = {
+    custom: require('./custom'),
     local: require('./local'),
     rest: require('./rest'),
-    soap: require('./soap')
+    soap: require('./soap'),
+    mqtt: require('./mqtt'),
 };
 
 const plugins = [];
@@ -69,8 +71,15 @@ function loadFiles(dir, ext, collection) {
                     switch (ext) {
                         /** JSON. */
                         case '.json':
-                            cache.setDoc(collection, file.split('.')[0], JSON.parse(data));
+                            const config = JSON.parse(data);
+                            cache.setDoc(collection, file.split('.')[0], config);
                             winston.log('info', 'Loaded ' + dir + '/' + file + '.');
+                            // If config has protocol mqtt, connect to the broker.
+                            if (Object.hasOwnProperty.call(config, 'static')) {
+                                if (Object.hasOwnProperty.call(config.static, 'topic')) {
+                                    protocols['mqtt'].connect(config, file.split('.')[0]);
+                                }
+                            }
                             break;
                         /** JavaScript. */
                         case '.js':
@@ -277,6 +286,7 @@ const getData = async (reqBody) => {
     _.unset(reqBody, IDS);
     _.unset(reqBody, START);
     _.unset(reqBody, END);
+    _.unset(reqBody, DATA_TYPES);
     parameters = {...parameters, ..._.get(reqBody, PARAMETERS) || {}};
 
     // Get data product config

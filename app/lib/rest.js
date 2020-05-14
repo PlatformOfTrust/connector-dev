@@ -122,7 +122,7 @@ const parseResBody = function (response) {
     let body = {};
     try {
         body = JSON.parse(response.body);
-    } catch (e) {
+    } catch (err) {
         winston.log('error', 'Failed to parse response body.');
     }
     return body;

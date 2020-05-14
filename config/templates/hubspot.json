@@ -1,0 +1,23 @@
+{
+  "plugins": [
+    "hubspot"
+  ],
+  "protocol": "custom",
+  "authConfig": {
+    "apikey": "${apikey}",
+    "path": "${id}",
+    "api": "companies",
+    "method": "getById"
+  },
+  "dataObjects": [
+    ""
+  ],
+  "dataPropertyMappings": {
+    "Company": ""
+  },
+  "generalConfig": {
+    "hardwareId": {
+      "dataObjectProperty": "companyId"
+    }
+  }
+}

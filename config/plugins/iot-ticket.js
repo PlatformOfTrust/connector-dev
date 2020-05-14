@@ -34,7 +34,7 @@ const parameters = async (config, parameters) => {
             }
         }
         return parameters;
-    } catch (e) {
+    } catch (err) {
         return parameters;
     }
 };
@@ -50,7 +50,7 @@ const id = async (config, id) => {
     let translation;
     try {
         translation = config.parameters.ids.find(reqId => reqId.path.includes(id.toLowerCase()));
-    } catch (e) {
+    } catch (err) {
         return id;
     }
     return translation || id;

@@ -14,7 +14,7 @@ const clients = {};
  * Queries measurements cache.
  *
  * @param {Object} config
- * @param {String} pathArray
+ * @param {Array} pathArray
  *   Resource path, which will be included to the resource url.
  * @return {Array}
  */

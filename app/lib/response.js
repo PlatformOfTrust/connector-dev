@@ -101,7 +101,7 @@ const handleData = async (config, path, index, APIData, SOAPData) => {
     }
 
     if (config.dataObjects.length < 1) {
-        winston.log('error','Received data objects is empty.');
+        winston.log('error','Data objects is empty.');
         return Promise.resolve();
     }
 
@@ -152,15 +152,10 @@ const handleData = async (config, path, index, APIData, SOAPData) => {
                 measurement.timestamp = new Date(timestamp * 1000);
             }
 
+            // Map data.
             _.forIn(config.dataPropertyMappings, function (value, key) {
-                if (config.dataPropertyMappings[Object.keys(config.dataPropertyMappings)[0]] === '') {
-                    if (_.get(dataObjects[j], Object.keys(config.dataPropertyMappings)[0]) !== undefined
-                        && _.get(dataObjects[j], Object.keys(config.dataPropertyMappings)[0]) !== null) {
-                        measurement.data[Object.keys(config.dataPropertyMappings)[0]] = _.get(
-                            dataObjects[j],
-                            Object.keys(config.dataPropertyMappings)[0]
-                        );
-                    }
+                if (config.dataPropertyMappings[key] === '') {
+                    measurement.data[key] = dataObjects[j];
                 } else {
                     if (_.get(dataObjects[j], value) !== undefined && _.get(dataObjects[j], value) !== null) {
                         measurement.data[key] = _.get(dataObjects[j], value);
@@ -244,4 +239,3 @@ const handleData = async (config, path, index, APIData, SOAPData) => {
 module.exports = {
     handleData,
 };
-

@@ -1,0 +1,14 @@
+{
+  "template": "hubspot",
+  "static": {
+    "apikey": "<apikey>"
+  },
+  "dynamic": {
+    "authConfig.path": "ids"
+  },
+  "request": {
+    "ids": [
+      "<id>"
+    ]
+  }
+}
