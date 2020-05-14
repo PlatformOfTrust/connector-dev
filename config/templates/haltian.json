@@ -12,8 +12,12 @@
     ""
   ],
   "dataPropertyMappings": {
+    "MeasureAirTemperatureCelciusDegree": "temp",
+    "MeasureAirHumidityPercentage": "humd",
+    "MeasureAirPressureMillibar": "airp",
+    "MeasureLightLevelLux": "lght",
     "MeasureCount": "moveCount",
-    "MeasureDistanceMeters": "dist"
+    "MeasureDistanceMilliMeter": "dist"
   },
   "generalConfig": {
     "sourceName": {
