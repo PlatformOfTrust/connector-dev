@@ -1,5 +1,5 @@
 {
-  "template": "mqtt",
+  "template": "haltian",
   "static": {
     "key": "<key-path>",
     "cert": "<cert-path>",
