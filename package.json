@@ -47,5 +47,10 @@
       "temp/*",
       "greenlock.d/*"
     ]
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "jsdoc": "^3.6.4",
+    "mocha": "^7.1.2"
   }
 }
