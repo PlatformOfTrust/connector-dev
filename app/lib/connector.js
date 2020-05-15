@@ -48,52 +48,71 @@ if (!fs.existsSync(pluginsDir)) fs.mkdirSync(pluginsDir);
  * Caches or requires file contents.
  *
  * @param {String} dir
+ * @param {String} ext
+ * @param {String} collection
+ * @param {Object} file
+ */
+function readFile(dir, ext, collection, file) {
+    return new Promise(function (resolve, reject) {
+        fs.readFile(dir + '/' + file, 'utf8', function (err, data) {
+            if (err) return winston.log('error', 'File read error', err.message);
+            try {
+                switch (ext) {
+                    /** JSON. */
+                    case '.json':
+                        const config = JSON.parse(data);
+                        cache.setDoc(collection, file.split('.')[0], config);
+                        // If config has protocol mqtt, connect to the broker.
+                        if (Object.hasOwnProperty.call(config, 'static')) {
+                            if (Object.hasOwnProperty.call(config.static, 'topic')) {
+                                protocols['mqtt'].connect(config, file.split('.')[0]);
+                            }
+                        }
+                        break;
+                    /** JavaScript. */
+                    case '.js':
+                        eval(collection)[file.split('.')[0]] = require('../.' + dir + '/' + file);
+                        break;
+                }
+                winston.log('info', 'Loaded ' + dir + '/' + file + '.');
+            } catch (err) {
+                winston.log('error', err.message);
+            }
+            resolve();
+        });
+    });
+}
+
+/**
+ * Scans directory and handles files.
+ *
+ * @param {String} dir
  *   Directory to be scanned.
  * @param {String} ext
  *   Extension of the files to be scanned.
  * @param {String} collection
  *   Collection name.
  */
-function loadFiles(dir, ext, collection) {
-    fs.readdir(dir, function (err, files) {
-        if (err) return console.log('Unable to scan directory: ' + err);
-        files.forEach(function (file) {
-            // Handle only files with given file extension.
-            if (file.substr(-ext.length) !== ext) return;
-            fs.readFile(dir + '/' + file, 'utf8', function (err, data) {
-                if (err) return winston.log('error', 'File read error', err.message);
-                try {
-                    switch (ext) {
-                        /** JSON. */
-                        case '.json':
-                            const config = JSON.parse(data);
-                            cache.setDoc(collection, file.split('.')[0], config);
-                            // If config has protocol mqtt, connect to the broker.
-                            if (Object.hasOwnProperty.call(config, 'static')) {
-                                if (Object.hasOwnProperty.call(config.static, 'topic')) {
-                                    protocols['mqtt'].connect(config, file.split('.')[0]);
-                                }
-                            }
-                            break;
-                        /** JavaScript. */
-                        case '.js':
-                            eval(collection)[file.split('.')[0]] = require('../.' + dir + '/' + file);
-                            break;
-                    }
-                    winston.log('info', 'Loaded ' + dir + '/' + file + '.');
-                } catch (err) {
-                    winston.log('error', err.message);
-                }
-            });
+function load(dir, ext, collection) {
+    return new Promise(function (resolve, reject) {
+        fs.readdir(dir, async (err, files) => {
+            if (err) reject(err);
+            for (let i = 0; i < files.length; i++) {
+                // Handle only files with given file extension.
+                if (files[i].substr(-ext.length) !== ext) continue;
+                await readFile(dir, ext, collection, files[i]);
+            }
+            resolve();
         });
     });
 }
 
-// Load plugins, configurations and templates.
-loadFiles(templatesDir, '.json', 'templates');
-loadFiles(protocolsDir, '.js', 'protocols');
-loadFiles(configsDir, '.json', 'configs');
-loadFiles(pluginsDir, '.js', 'plugins');
+// Load templates, protocols, configurations and plugins.
+load(templatesDir, '.json', 'templates')
+    .then(() => {return load(protocolsDir, '.js', 'protocols')})
+    .then(() => {return load(configsDir, '.json', 'configs')})
+    .then(() => {return load(pluginsDir, '.js', 'plugins')})
+    .catch((err) => winston.log('error', err.message));
 
 /**
  * Replaces placeholder/s with given value/s.
@@ -219,9 +238,9 @@ const interpretMode = function (config, parameters) {
     // Latest by default.
     config.mode = 'latest';
 
-    // Detect history request from start and end time
+    // Detect history request from start and end time.
     if (parameters.start && parameters.end) {
-        // Sort timestamp to correct order
+        // Sort timestamps to correct order.
         if (parameters.end < parameters.start) {
             const start = parameters.end;
             parameters.end = parameters.start;
@@ -285,7 +304,7 @@ const getData = async (reqBody) => {
     _.unset(reqBody, DATA_TYPES);
     parameters = {...parameters, ..._.get(reqBody, PARAMETERS) || {}};
 
-    // Get data product config
+    // Get data product config.
     let config = cache.getDoc('configs', productCode);
     if (!config) config = cache.getDoc('configs', 'default');
     if (!config) return rest.promiseRejectWithError(404, 'Data product config not found.');
@@ -293,7 +312,7 @@ const getData = async (reqBody) => {
         return rest.promiseRejectWithError(404, 'Data product config template not defined.');
     }
 
-    // Get data product config template
+    // Get data product config template.
     let template = cache.getDoc('templates', config.template);
     if (!template) return rest.promiseRejectWithError(404, 'Data product config template not found.');
 
