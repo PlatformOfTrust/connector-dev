@@ -49,16 +49,17 @@ module.exports = function (passport) {
             /** Signature validation */
             let verified = false;
             let environment;
-            let publicKeys = cache.getDocs('publicKeys');
-            for (let env in publicKeys) {
-                if (Object.hasOwnProperty.call(publicKeys, env)) {
-                    // Verify the payload and signature against the Platform of Trust public key.
-                    if (rsa.verifySignature(req.body, signature, publicKeys[env])) {
-                        verified = true;
-                        environment = env;
-                    }
+            let publicKeys = (cache.getDocs('publicKeys') || []).sort((a, b) => (a.priority > b.priority) ? 1 : -1);
+
+            // Verify payload and signature against Platform of Trust public key.
+            for (let i = 0; i < publicKeys.length; i++) {
+                if (verified) continue;
+                if (rsa.verifySignature(req.body, signature, publicKeys[i].key)) {
+                    verified = true;
+                    environment = publicKeys[i].env;
                 }
             }
+
             if (!verified) return done(null, false, {message: 'Signature validation failed'});
 
             /*

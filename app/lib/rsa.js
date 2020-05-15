@@ -54,16 +54,14 @@ if (!privateKey || !publicKey) {
  * Reads public keys from Platform of Trust resources.
  */
 const readPublicKeys = function () {
-    for (let environment in publicKeyURLs) {
-        if (Object.hasOwnProperty.call(publicKeyURLs, environment)) {
-            request(publicKeyURLs[environment], function (err, response, body) {
-                if (err) {
-                    winston.log('error', err.message);
-                } else {
-                    cache.setDoc('publicKeys', environment, body.toString())
-                }
-            });
-        }
+    for (let i = 0; i < publicKeyURLs.length; i++) {
+        request(publicKeyURLs[i].url, function (err, response, body) {
+            if (err) {
+                winston.log('error', err.message);
+            } else {
+                cache.setDoc('publicKeys', i, {priority: i, ...publicKeyURLs[i], key: body.toString()})
+            }
+        });
     }
 };
 
