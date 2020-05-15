@@ -1,13 +1,6 @@
 "use strict";
 /**
- * Module dependencies.
- */
-const response = require('../lib/response');
-
-/**
- * Local library.
- *
- * Handles local request composition. Returns data from local environment (test data).
+ * Test plugin.
  */
 
 /**
@@ -41,7 +34,7 @@ const generateData = function (id, range) {
         let data = [];
         let length = 1;
         if (range[0].toString() !== 'Invalid Date'
-        && range[1].toString() !== 'Invalid Date') {
+            && range[1].toString() !== 'Invalid Date') {
             length = Math.max(Math.floor((range[1].getTime() - range[0].getTime()) / 600000), 1);
         } else {
             range[0] = new Date.now();
@@ -61,30 +54,34 @@ const generateData = function (id, range) {
 };
 
 /**
- * Initiates data requests.
+ * Generates test data by given attributes.
  *
  * @param {Object} config
- * @param {String} pathArray
- *   Resource path, which will be included to the request.
- * @return {Array}
+ * @param {Object/String} res
+ * @return {Object}
  */
-const getData = async (config, pathArray) => {
-    let range;
-    if (config.mode === 'history' || config.mode === 'prediction') {
-        range = [config.parameters.start, config.parameters.end]
+const response = async (config, res) => {
+    let response;
+
+    /** Data fetching. */
+    try {
+        let range;
+        if (config.mode === 'history' || config.mode === 'prediction') {
+            range = [config.parameters.start, config.parameters.end]
+        }
+
+        // Generate data.
+        response = generateData(res, range);
+    } catch (err) {
+        console.log(err.message);
     }
-    const items = [];
-    for (let p = 0; p < pathArray.length; p++) {
-        // Handle result by template settings.
-        const item = await response.handleData(config, pathArray[p], p, generateData(pathArray[p], range));
-        if (item) items.push(item);
-    }
-    return items;
+    return response;
 };
 
 /**
- * Expose library functions.
+ * Expose plugin methods.
  */
 module.exports = {
-    getData
+    name: 'test',
+    response,
 };

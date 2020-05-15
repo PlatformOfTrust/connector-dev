@@ -1,6 +1,8 @@
 {
-  "plugins": [],
-  "protocol": "local",
+  "plugins": [
+    "test"
+  ],
+  "protocol": "custom",
   "authConfig": {
     "path": "${id}"
   },

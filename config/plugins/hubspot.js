@@ -15,7 +15,7 @@ const clients = {};
  * Consumes HubSpot API by given method.
  *
  * @param {Object} config
- * @param {Object} res
+ * @param {Object/String} res
  * @return {Object}
  *   Response from HubSpot API
  */
