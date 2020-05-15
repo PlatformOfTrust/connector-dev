@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 const fs = require('fs');
-const mqtt = require('app/protocols/mqtt');
+const mqtt = require('mqtt');
 const response = require('../lib/response');
 const winston = require('../../logger.js');
 const cache = require('../cache');

@@ -2,6 +2,7 @@
 /**
  * Module dependencies.
  */
+const moment = require('moment');
 const rsa = require('../lib/rsa');
 const connector = require('../lib/connector');
 
@@ -10,6 +11,9 @@ const connector = require('../lib/connector');
  *
  * Handles fetching and returning of the data.
  */
+
+/** Mandatory environment variable. */
+let domain = process.env.TRANSLATOR_DOMAIN;
 
 /** Import contextURL definitions. */
 const contextURLs = require('../../config/definitions/pot').contextURLs;
@@ -39,10 +43,20 @@ module.exports.fetch = async (req, res) => {
         // Fetch data.
         result.data.items = await connector.getData(req.body);
 
+        // Initialize signature object.
+        let signature = {
+            type: 'RsaSignature2018',
+            created: moment().format(),
+            creator: 'https://' + domain + '/translator/v1/public.key',
+        };
+
         // Send signed data response.
         return res.status(200).send({
             ...result,
-            signature: rsa.generateSignature(result)
+            signature: {
+                ...signature,
+                signatureValue: rsa.generateSignature({...result, __signed__: signature.created})
+            }
         });
     } catch (err) {
         // Compose error response object.

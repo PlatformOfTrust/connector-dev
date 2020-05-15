@@ -3,7 +3,6 @@
  * Module dependencies.
  */
 const crypto = require('crypto');
-const moment = require('moment');
 const cache = require('../cache');
 const request = require('request');
 const winston = require('../../logger.js');
@@ -16,9 +15,6 @@ const winston = require('../../logger.js');
 
 /** Platform of Trust related definitions. */
 const {defaultKeySize, publicKeyURLs} = require('../../config/definitions/pot');
-
-/** Mandatory environment variables. */
-let domain = process.env.TRANSLATOR_DOMAIN;
 
 /** Optional environment variables. */
 let privateKey = process.env.PRIVATE_KEY;
@@ -69,43 +65,6 @@ const readPublicKeys = function () {
 readPublicKeys();
 
 /**
- * Formats private key before it is used for signing.
- *
- * @param {String} str
- *   Private key.
- * @return {String}
- *   Formatted private key.
- */
-function formatPrivateKey(str) {
-    const begin = '-----BEGIN PRIVATE KEY-----';
-    const end = '-----END PRIVATE KEY-----';
-    return str
-        .replace(begin, '')
-        .replace(end, '');
-}
-
-/**
- * Formats public key.
- * Wraps base64 string to rows by given length.
- *
- * @param {String} str
- *   Public key.
- * @param {Number} length
- *   Length of a single line
- * @return {String}
- *   Formatted public key.
- */
-function formatPublicKey(str, length) {
-    const begin = '-----BEGIN PUBLIC KEY-----';
-    const end = '-----END PUBLIC KEY-----';
-    return begin + '\n' + str
-        .replace(begin, '')
-        .replace(end, '')
-        .match(new RegExp('.{1,' + length + '}', 'g'))
-        .join('\n') + '\n' + end;
-}
-
-/**
  * Sends public key response.
  *
  * @param {Object} req
@@ -114,7 +73,7 @@ function formatPublicKey(str, length) {
 const sendPublicKey = function (req, res) {
     res.setHeader('Content-type', "application/octet-stream");
     res.setHeader('Content-disposition', 'attachment; filename=public.key');
-    res.send(formatPublicKey(publicKey, 64));
+    res.send(publicKey);
 };
 
 /**
@@ -159,23 +118,19 @@ const generateSignature = function (body, key) {
     // Use local private key, if not given.
     if (!key) key = privateKey;
 
-    // Initialize signature object.
-    let signature = {
-        type: 'RsaSignature2018',
-        created: moment().format(),
-        creator: 'https://' + domain + '/translator/v1/public.key',
-    };
+    // Initialize signature value.
+    let signatureValue;
 
-    // Create HMAC-SHA256 signature in base64 encoded format.
+    // Create SHA256 signature in base64 encoded format.
     try {
-        signature.signatureValue = crypto
+        signatureValue = crypto
             .createSign('sha256')
-            .update(stringifyBody({...body, __signed__: signature.created}))
+            .update(stringifyBody(body))
             .sign({key, padding: crypto.constants.RSA_PKCS1_PSS_PADDING}, 'base64');
     } catch (err) {
         winston.log('error', err.message);
     }
-    return signature;
+    return signatureValue;
 };
 
 /**
