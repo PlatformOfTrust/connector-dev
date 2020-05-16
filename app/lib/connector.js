@@ -260,7 +260,7 @@ const interpretMode = function (config, parameters) {
         parameters.start = new Date(moment.now() - defaultTimeRange);
     }
 
-    // Detect prediction request from end time
+    // Detect prediction request from end time.
     if (parameters.end.getTime() > moment.now()) {
         config.mode = 'prediction';
     }
@@ -368,9 +368,9 @@ const getData = async (reqBody) => {
     // Initialize items array.
     let items = [];
 
-    // Check that protocol is defined.
+    // Check that a protocol is defined.
     if (!Object.hasOwnProperty.call(template, 'protocol')) {
-        return rest.promiseRejectWithError(500, 'Connection protocol ' + template.protocol + ' not found.');
+        return rest.promiseRejectWithError(500, 'Connection protocol not defined.');
     } else {
         // Check that the protocol is supported.
         if (!Object.hasOwnProperty.call(protocols, template.protocol)) {

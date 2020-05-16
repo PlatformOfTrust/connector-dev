@@ -88,7 +88,7 @@ if (process.env.GREENLOCK_MAINTANER) {
     if (!fs.existsSync(configDir)) fs.mkdirSync(configDir);
     if (!fs.existsSync(configFile)) fs.writeFileSync(configFile, JSON.stringify(config), 'utf8');
 
-    // Configure domain
+    // Configure domain.
     try {
         config = JSON.parse(fs.readFileSync(configFile).toString());
         if (config.sites.length === 0) {

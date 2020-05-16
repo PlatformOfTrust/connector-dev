@@ -55,7 +55,7 @@ const mapArrays = function (arrays) {
  *   Target object.
  * @param {String} key
  *   Config property key.
- * @return value
+ * @return {Object/String}
  */
 function getValueFromResponse(config, path, object, key) {
     if (config[key]) {
@@ -75,15 +75,10 @@ function getValueFromResponse(config, path, object, key) {
  * @param {Object} config
  * @param {String} path
  * @param {Number} index
- * @param [APIData]
- * @param [SOAPData]
+ * @param {Object} data
  * @return {Promise}
  */
-const handleData = async (config, path, index, APIData, SOAPData) => {
-    let data = {};
-    if (!SOAPData) data = APIData;
-    else data = SOAPData;
-
+const handleData = async (config, path, index, data) => {
     // Execute response plugin function.
     for (let i = 0; i < config.plugins.length; i++) {
         if (!!config.plugins[i].response) {
@@ -95,23 +90,14 @@ const handleData = async (config, path, index, APIData, SOAPData) => {
     if (!_.isObject(data)) return Promise.resolve();
     if (Object.keys(data).length === 0) return Promise.resolve();
 
+    // Validate data object configurations.
     if (!config.dataPropertyMappings || !config.dataObjects) {
         winston.log('error', 'Configuration dataPropertyMappings or dataObjects missing.');
         return Promise.resolve();
     }
 
-    if (config.dataObjects.length < 1) {
-        winston.log('error','Data objects is empty.');
-        return Promise.resolve();
-    }
-
-    // SOAP specific hardware id handling
-    if (config.authConfig.type === 'soap'
-        || config.authConfig.type === 'soap-basic'
-        || config.authConfig.type === 'soap-ntlm') {
-        data.hardwareId = path[Object.keys(path)[0]];
-        path = '';
-    }
+    // Define the response as data object by default.
+    if (config.dataObjects.length < 1) config.dataObjects = [''];
 
     let measurements = [];
 
