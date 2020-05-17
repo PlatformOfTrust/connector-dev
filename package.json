@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "nodemon server.js",
-    "test": "mocha"
+    "test": "mocha",
+    "docs":  "jsdoc -r . -c ./conf.json"
   },
   "repository": {
     "type": "git",
@@ -45,6 +46,7 @@
   },
   "nodemonConfig": {
     "ignore": [
+      "out/*",
       "temp/*",
       "greenlock.d/*"
     ]

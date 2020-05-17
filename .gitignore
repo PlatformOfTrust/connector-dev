@@ -2,10 +2,10 @@ node_modules/
 greenlock.d/
 temp/
 log/
+out/
 
 package-lock.json
 .greenlockrc
 yarn.lock
 .idea
 .env
-
