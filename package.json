@@ -47,6 +47,7 @@
   "nodemonConfig": {
     "ignore": [
       "out/*",
+      "wsdl/*",
       "temp/*",
       "greenlock.d/*"
     ]
