@@ -17,10 +17,32 @@ module.exports = function (passport) {
     /** Public key. */
     router.get('/public.key', rsa.sendPublicKey);
 
-    /** Status. */
+    /** Status.
+     *
+     * @swagger
+     * /translator/v1/health:
+     *   get:
+     *     description: Health check.
+     *     produces:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: Server up and running.
+     */
     router.use('/health/', require('./health')(passport));
 
-    /** Translator. */
+    /** Translator.
+     *
+     * @swagger
+     * /translator/v1/fetch:
+     *   get:
+     *     description: Returns data.
+     *     produces:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: Data fetched successfully.
+     */
     router.use('/fetch/', require('./fetch')(passport));
 
     return router;
