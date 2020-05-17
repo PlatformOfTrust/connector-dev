@@ -33,7 +33,6 @@ const options = {
  *
  * @param {String} [domain]
  * @return {swaggerJSDoc}
- *   Data array.
  */
 const swaggerSpec = (domain) => {
     if (domain) options.swaggerDefinition.host = 'https://' + domain;
