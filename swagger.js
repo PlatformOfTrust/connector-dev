@@ -32,7 +32,7 @@ const options = {
  * Returns swagger-jsdoc.
  *
  * @param {String} [domain]
- * @return {swaggerJSDoc}
+ * @return {Object}
  */
 const swaggerSpec = (domain) => {
     if (domain) options.swaggerDefinition.host = 'https://' + domain;
