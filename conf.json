@@ -8,7 +8,10 @@
     "exclude": [
       "node_modules",
       "greenlock.d",
-      "log"
+      "wsdl",
+      "test",
+      "log",
+      "out"
     ]
   },
   "plugins": [
