@@ -7,7 +7,6 @@ const helmet = require('helmet');
 const express = require('express');
 const passport = require('passport');
 const winston = require('./logger.js');
-const swagger = require('./swagger.js');
 const bodyParser = require('body-parser');
 const compression = require('compression');
 
@@ -30,12 +29,6 @@ app.disable('x-powered-by');
 
 // Configure passport.
 require('./app/auth/passport')(passport);
-
-// Serve swagger documentation.
-app.get('/swagger.json', function(req, res) {
-    res.setHeader('Content-Type', 'application/json');
-    res.send(swagger(process.env.TRANSLATOR_DOMAIN));
-});
 
 // Set up routes for app.
 require('./app/routes/index').app(app, passport);

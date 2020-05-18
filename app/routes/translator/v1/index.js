@@ -2,6 +2,7 @@
 /**
  * Module dependencies.
  */
+const swaggerJSDoc = require('swagger-jsdoc');
 const router = require('express').Router();
 const rsa = require('../../../lib/rsa');
 
@@ -44,6 +45,25 @@ module.exports = function (passport) {
      *         description: Data fetched successfully.
      */
     router.use('/fetch/', require('./fetch')(passport));
+
+    /** Swagger documentation. */
+    router.get('/swagger.json', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+        res.send(swaggerJSDoc({
+            swaggerDefinition: {
+                info: {
+                    title: 'Connector',
+                    version: '1.0.0',
+                    description: 'HTTP server to handle Platform of Trust Broker API requests.',
+                },
+                basePath: '/',
+                host: req.protocol + '://' + req.get('host'),
+            },
+            apis: [
+                './app/routes/translator/v1/index.js'
+            ]
+        }));
+    });
 
     return router;
 };
