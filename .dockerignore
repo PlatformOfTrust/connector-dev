@@ -5,6 +5,7 @@ node_modules
 greenlock.d
 
 .idea
+.env
 test
 log
 out
