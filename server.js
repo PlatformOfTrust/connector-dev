@@ -69,13 +69,9 @@ const handler = function (err) {
     }
 };
 
-// Set callback for HTTP server.
-const callback = function (port) {
-    winston.log('info', 'Connector API started on port: ' + port);
-};
-
 let server;
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8080;
+const host = process.env.HOST || '0.0.0.0';
 
 // Start HTTP server.
 if (process.env.GREENLOCK_MAINTANER) {
@@ -108,5 +104,7 @@ if (process.env.GREENLOCK_MAINTANER) {
         cluster: false
     }).serve(app);
 } else {
-    server = require('http').createServer(app).listen(port, callback(port)).on('error', handler);
+    server = require('http').createServer(app)
+        .listen(port, host, () => winston.log('info', `Connector API started on port: ${port}`))
+        .on('error', handler);
 }
