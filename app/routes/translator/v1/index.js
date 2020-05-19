@@ -36,7 +36,7 @@ module.exports = function (passport) {
      *
      * @swagger
      * /translator/v1/fetch:
-     *   get:
+     *   post:
      *     description: Returns data.
      *     produces:
      *       - application/json

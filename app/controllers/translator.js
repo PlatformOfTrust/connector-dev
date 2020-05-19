@@ -33,15 +33,11 @@ module.exports.fetch = async (req, res) => {
     try {
         result = {
             "@context": contextURLs[type],
-            "data": {
-                "@context": contextURLs[type],
-                "@type": type,
-                "items": []
-            }
+            "data": []
         };
 
         // Fetch data.
-        result.data.items = await connector.getData(req.body);
+        result.data = await connector.getData(req.body);
 
         // Initialize signature object.
         let signature = {

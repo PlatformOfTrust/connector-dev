@@ -4,18 +4,10 @@
  */
 const definitions = {
     TIMESTAMP: 'timestamp',
-    DATA: 'data',
+    DATA: 'measurements',
     VALUE: 'value',
     TYPE: '@type',
     ID: 'id',
-};
-
-const definitionsV2 = {
-    TIMESTAMP: 'timestamp',
-    DATA: 'dataProductOutput',
-    VALUE: 'outputValue',
-    TYPE: '@type',
-    ID: '@id',
 };
 
 /**

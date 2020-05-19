@@ -39,7 +39,7 @@ const publicKeyURLs = [
 
 /** Context URLs. */
 const contextURLs = {
-    DataProduct: 'https://standards.lifeengine.io/v1/Context/Identity/Thing/HumanWorld/Product/DataProduct/'
+    DataProduct: 'https://standards-ontotest.oftrust.net/v2/Schema/DataProductOutput/SensorDataProductOutput/'
 };
 
 /**
