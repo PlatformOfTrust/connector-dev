@@ -89,8 +89,8 @@ if (process.env.GREENLOCK_MAINTANER) {
         config = JSON.parse(fs.readFileSync(configFile).toString());
         if (config.sites.length === 0) {
             config.sites.push({
-                subject: process.env.TRANSLATOR_DOMAIN,
-                altnames: [process.env.TRANSLATOR_DOMAIN]
+                subject: process.env.GREENLOCK_DOMAIN,
+                altnames: [process.env.GREENLOCK_DOMAIN]
             });
             fs.writeFileSync(configFile, JSON.stringify(config), 'utf8');
         }

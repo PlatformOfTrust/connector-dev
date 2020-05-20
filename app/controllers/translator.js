@@ -12,9 +12,6 @@ const connector = require('../lib/connector');
  * Handles fetching and returning of the data.
  */
 
-/** Mandatory environment variable. */
-let domain = process.env.TRANSLATOR_DOMAIN;
-
 /** Import contextURL definitions. */
 const contextURLs = require('../../config/definitions/pot').contextURLs;
 
@@ -43,7 +40,7 @@ module.exports.fetch = async (req, res) => {
         let signature = {
             type: 'RsaSignature2018',
             created: moment().format(),
-            creator: 'https://' + domain + '/translator/v1/public.key',
+            creator: req.protocol + '://' + req.get('host') + '/translator/v1/public.key',
         };
 
         // Send signed data response.
