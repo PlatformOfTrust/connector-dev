@@ -205,7 +205,7 @@ function replacePlaceholders(config, template, params) {
 const parseTs = function (timestamp) {
     if (!timestamp) return timestamp;
     try {
-        let parsed = new Date(timestamp);
+        let parsed = new Date(Date.parse(timestamp));
         if (parsed.toString() === 'Invalid Date' || parsed.toString() === 'Invalid date') {
             // Try parsing the timestamp to integer.
             timestamp = Number.parseInt(timestamp);
@@ -260,8 +260,8 @@ const interpretMode = function (config, parameters) {
         parameters.start = new Date(moment.now() - defaultTimeRange);
     }
 
-    // Detect prediction request from end time.
-    if (parameters.end.getTime() > moment.now()) {
+    // Detect prediction request from end time and client's current local time.
+    if (parameters.end.getTime() > config.timestamp.getTime()) {
         config.mode = 'prediction';
     }
 
@@ -332,6 +332,9 @@ const getData = async (reqBody) => {
 
     // Place values defined in config to template.
     template = replacePlaceholders(config, template, parameters);
+
+    // Timestamp presents client's current local time.
+    template.timestamp = parseTs(timestamp);
 
     // Interpret mode.
     template = interpretMode(template, parameters);
