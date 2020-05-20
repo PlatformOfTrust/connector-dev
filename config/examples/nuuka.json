@@ -1,0 +1,19 @@
+{
+  "template": "nuuka",
+  "static": {
+    "url": "<url>",
+    "version": "<version>",
+    "category": "<category>",
+    "precision": "<precision>",
+    "reportingGroup": "<reporting-group>"
+  },
+  "dynamic": {
+    "authConfig.path": "ids",
+    "dataPropertyMappings": "type"
+  },
+  "request": {
+    "ids": [
+      "<locationName>"
+    ]
+  }
+}

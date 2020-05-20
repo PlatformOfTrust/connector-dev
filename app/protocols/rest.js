@@ -50,6 +50,15 @@ const getDataByOptions = async (config, options, path) => {
                 queryString += Object.keys(options.query[i])[0] + '=' + Object.values(options.query[i])[0];
                 if (i !== (options.query.length - 1)) queryString += '&';
             }
+
+            // Check whether the URL already contains query entries.
+            let entries = [];
+            for (let entry of new URL(options.url).searchParams.keys()) {
+                entries.push(entry)
+            }
+            if (entries.length > 0) queryString = '&' + queryString.substr(1);
+
+            // Attach query.
             options.url += queryString;
         }
 
