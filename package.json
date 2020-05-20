@@ -6,7 +6,8 @@
   "scripts": {
     "start": "nodemon server.js",
     "test": "mocha",
-    "docs": "jsdoc -r . -c ./conf.json"
+    "docs": "jsdoc -r . -c ./conf.json",
+    "docker:build": "docker build . -t connector"
   },
   "repository": {
     "type": "git",
